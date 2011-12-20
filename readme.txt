@@ -73,7 +73,7 @@ Finally, the plug-in provides a function `eo_get_events` which is similiar to Wo
 1. Event admin screen
 2. Venue admin screen
 3. Event details metabox, showing the full reoccurrence options and venue selection
-4. Venue editing screen, with Google Maps.
+4. Venue editing screen, with Google Maps
 5. Calendar View screen
 6. View of a venue page on the front-end (in a theme based on WordPress TwentyEleven)
 
@@ -84,10 +84,4 @@ Minor bug fixes and readme update.
 
 = 1.0.0 =
 Initial release
-
-
-== Upgrade Notice ==
-
-
-
 `<?php code(); // goes in backticks ?>`
