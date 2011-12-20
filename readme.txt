@@ -69,6 +69,7 @@ The plug-in also provides event listing and event calendar widgets and shortocde
 Finally, the plug-in provides a function `eo_get_events` which is similiar to WordPress' `get_posts`. The function returns an array of post objects (where the posts are events), and this can be used to display events through editing your theme. The usual WordPress functions for display associated information (author, title etc) are still available to you, and the plug-in provides a similar set of functions to display event related data (dates, venues etc). See the [documentation](http://www.harriswebsolutions.co.uk/event-organiser/documentation/function-reference/).
 
 == Screenshots ==
+
 1. Event admin screen
 2. Venue admin screen
 3. Event details metabox, showing the full reoccurrence options and venue selection
