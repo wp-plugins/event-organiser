@@ -10,7 +10,7 @@ Create and maintain events, including complex reoccurring patterns, venue manage
 
 == Description ==
 
-Event Organiser adds event management that integrates well with your WordPress site. By using WordPress' in-built 'custom post type', this plug-in allows you to create events that have the same functionality as posts (can support (if required) descriptions, thumbnails, comments etc), while adding further features that allow you to manage your events. This includes the possibility of repeating your event according to complex schedules and assign your events to venues. This can all be done through an intuitive user interface, which allows your to view your events in the familiar WordPress list or view all occurrences of your events in a calendar page in the amin area.
+Event Organiser adds event management that integrates well with your WordPress site. By using WordPress' in-built 'custom post type', this plug-in allows you to create events that have the same functionality as posts, while adding further features that allow you to manage your events. This includes the possibility of repeating your event according to complex schedules and assign your events to venues. This can all be done through an intuitive user interface, which allows your to view your events in the familiar WordPress list or view all occurrences of your events in a calendar page in the amin area.
 
 The plug-in functions as is, including template pages for Events, event archives, venues and event category pages, that should work with most themes . To override the default templates, simply create your own (appropriately named) template files in your theme directory. For a description of the functions that allow you to output event specific information, see the documentation.
 
@@ -60,6 +60,7 @@ You can also add events in the Calendar view in a manner similiar to Google Cale
 
 
 = How do I display events? =
+
 Events are automatically displayed on the events page: try `www.your-wordpress-site.com/?post_type=event` (If you have permalinks enabled these will have 'prettier' versions). Similarly, `?event-category=` would display events of a specfied category, and `?venue=`, events at specified venue. FInally `?event=` will show the specified event.
 
 Each of the above have their own associated template. These template files are present in the template sub-directory of the Event-Organiser plug-in folder. To override the default templates, simply create the appropriately named files in your theme directory.
@@ -84,4 +85,3 @@ Minor bug fixes and readme update.
 
 = 1.0.0 =
 Initial release
-`<?php code(); // goes in backticks ?>`
