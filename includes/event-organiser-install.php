@@ -1,6 +1,6 @@
 <?php
  function eventorganiser_install(){
-       global $wpdb, $eventorganiser_version, $eventorganiser_venue_table, $eventorganiser_events_table;
+       global $wpdb, $eventorganiser_db_version, $eventorganiser_venue_table, $eventorganiser_events_table;
 	$table_posts = $wpdb->prefix . "posts";
 
 	$charset_collate = '';
@@ -25,11 +25,7 @@
 		event_allday TINYINT(1) NOT NULL,
 		reoccurrence_start DATE NOT NULL,
 		reoccurrence_end DATE NOT NULL,
-		PRIMARY KEY  (event_id),
-		CONSTRAINT ".$table_posts."
-		FOREIGN KEY (post_id)
-		REFERENCES ".$table_posts."(ID)
-		ON DELETE CASCADE )".$charset_collate;
+		PRIMARY KEY  (event_id))".$charset_collate;
 	
 	//Venue table
 	$sql_venue_table = "CREATE TABLE " . $eventorganiser_venue_table. " (
@@ -61,8 +57,8 @@
 		'excludefromsearch'=>0,
 		'showpast'=> 0
 	);
-	add_option("eventorganiser_version",$eventorganiser_db_version);
-	add_option('eventorganiser_options',$eventorganiser_options);
+	update_option("eventorganiser_version",$eventorganiser_db_version);
+	update_option('eventorganiser_options',$eventorganiser_options);
 			
 	global $wp_roles,$eventorganiser_roles;	
 	$all_roles = $wp_roles->roles;
