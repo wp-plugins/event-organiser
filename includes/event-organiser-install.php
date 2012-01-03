@@ -1,6 +1,6 @@
 <?php
  function eventorganiser_install(){
-       global $wpdb, $eventorganiser_version, $eventorganiser_venue_table, $eventorganiser_events_table;
+       global $wpdb, $eventorganiser_db_version, $eventorganiser_venue_table, $eventorganiser_events_table;
 	$table_posts = $wpdb->prefix . "posts";
 
 	$charset_collate = '';
@@ -25,11 +25,7 @@
 		event_allday TINYINT(1) NOT NULL,
 		reoccurrence_start DATE NOT NULL,
 		reoccurrence_end DATE NOT NULL,
-		PRIMARY KEY  (event_id),
-		CONSTRAINT ".$table_posts."
-		FOREIGN KEY (post_id)
-		REFERENCES ".$table_posts."(ID)
-		ON DELETE CASCADE )".$charset_collate;
+		PRIMARY KEY  (event_id))".$charset_collate;
 	
 	//Venue table
 	$sql_venue_table = "CREATE TABLE " . $eventorganiser_venue_table. " (
@@ -61,8 +57,8 @@
 		'excludefromsearch'=>0,
 		'showpast'=> 0
 	);
-	add_option("eventorganiser_version",$eventorganiser_db_version);
-	add_option('eventorganiser_options',$eventorganiser_options);
+	update_option("eventorganiser_version",$eventorganiser_db_version);
+	update_option('eventorganiser_options',$eventorganiser_options);
 			
 	global $wp_roles,$eventorganiser_roles;	
 	$all_roles = $wp_roles->roles;
@@ -79,6 +75,52 @@
 
 function eventorganiser_deactivate(){
     }
+
+
+add_action('admin_init', 'eventorganiser_upgradecheck');
+function eventorganiser_upgradecheck(){
+       global $eventorganiser_db_version, $eventorganiser_events_table, $wpdb;
+	global $EO_Errors;
+
+	$installed_ver = get_option('eventorganiser_version');
+
+	//If this is an old version, perform some updates.
+	if ( !empty($installed_ver ) && $installed_ver != $eventorganiser_db_version ):
+		  if ( get_option('plugin_db_version') < '1.1') {
+			$query = $wpdb->prepare("SELECT* 
+				FROM {$eventorganiser_events_table}
+				WHERE {$eventorganiser_events_table}.event_schedule = 'monthly'
+				GROUP BY {$eventorganiser_events_table}.post_id");
+		
+			$results = $wpdb->get_results($query); 
+		
+			foreach ( $results as $event ):
+				$meta = $event->event_schedule_meta;
+				$start = new DateTime(esc_attr($event->StartDate));
+				$post_id = $event->post_id;
+
+				$bymonthday =preg_match('/^BYMONTHDAY=(\d{1,2})/' ,$meta,$matches);
+				$byday = preg_match('/^BYDAY=(-?\d{1,2})([a-zA-Z]{2})/' ,$meta,$matchesOLD);
+				
+				if(!($bymonthday || $byday )):
+
+					if($meta=='date'):
+						$meta = 'BYMONTHDAY='.$start->format('d');
+					else:
+						$meta = 'BYDAY='.$meta;
+					endif;
+					
+					$result = $wpdb->update(
+						$eventorganiser_events_table, 
+						array('event_schedule_meta'=>$meta), 
+						array('post_id'=>$post_id)
+					); 
+				endif;
+			  endforeach;
+		}
+		update_option('eventorganiser_version', $eventorganiser_db_version);
+	endif;
+}
 
 
 function eventorganiser_uninstall(){

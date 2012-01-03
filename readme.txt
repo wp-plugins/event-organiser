@@ -1,10 +1,10 @@
 === Event Organiser ===
 Contributors: stephenh1988
-Donate link: http://www.HarrisWebSolutions.co.uk/
+Donate link: http://www.harriswebsolutions.co.uk/event-organiser/
 Tags: events, event, event organiser, event calendar, events calendar, event management, widget, venues, maps, gigs, shows,
 Requires at least: 3.3
 Tested up to: 3.3
-Stable tag: 1.0.2
+Stable tag: 1.1
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
 
@@ -12,7 +12,14 @@ Create and maintain events, including complex reoccurring patterns, venue manage
 
 Event Organiser adds event management that integrates well with your WordPress site. By using WordPress' in-built 'custom post type', this plug-in allows you to create events that have the same functionality as posts, while adding further features that allow you to manage your events. This includes the possibility of repeating your event according to complex schedules and assign your events to venues. This can all be done through an intuitive user interface, which allows your to view your events in the familiar WordPress list or view all occurrences of your events in a calendar page in the amin area.
 
-Requires WordPress 3.3 and PHP 5.3 (or higher)
+Requires **WordPress 3.3** and **PHP 5.3** (or higher)
+
+=New Features=
+* Public version of the admin calendar (shortcode).
+*'mini-calendar' navigation for the admin calendar.
+* Import events from an ICAL file.
+* 'Fully featured' content editor for the venue admin page: include media content from your library.
+* Venue descriptions can now understand shortcodes.
 
 = Features =
 * Adds an **event custom post type** that fits naturally into WordPress and allows for all the functionality of 'posts'.
@@ -25,7 +32,7 @@ Requires WordPress 3.3 and PHP 5.3 (or higher)
 * The **Venue map shortcodes** to display a map of a venue
 *  **Custom permissions** allow to specifiy which roles have the ability to create, edit and delete events or manage venues.
 * **Template** pages include in the plug-in for 'quick-start'. These can be over-ridden by including the appropriately named template files in your theme folder 
-* **Event functions** available which extend the post functions (e.g. the_title(),get_the_author(), the_author()) to ouput or return event data (the start date-time, the venue etc). For examples of their use see the [documentation](http://www.harriswebsolutions.co.uk/event-organiser/documentation/) documentation or the included template files.
+* **Event functions** available which extend the post functions (e.g. `the_title()`,`get_the_author()`, `the_author()`) to ouput or return event data (the start date-time, the venue etc). For examples of their use see the [documentation](http://www.harriswebsolutions.co.uk/event-organiser/documentation/) documentation or the included template files.
 * Assign events to categories, and view events by category
 * Venue pages, to view events by venue
 * Export events to .ics file
@@ -33,7 +40,6 @@ Requires WordPress 3.3 and PHP 5.3 (or higher)
 
 
 = Planned Features =
-* Import events
 * Public ICAL Feed
 * Introducing actions and filters to allow developers or plug-ins to modify and interact with Event Organiser
 * Allowing users to exclude or include specific dates in an event's schedule
@@ -78,6 +84,18 @@ Finally, the plug-in provides a function `eo_get_events` which is similiar to Wo
 
 == Changelog ==
 
+= 1.1 =
+Improved admin calendar navigation, with category/venue filters. Public version of the 'admin calendar' now available as a shortcode. You can now import events from an ICAL file. Further details included in the ics export file. The venue content editor is now fully featured. Venue descriptions now understand shortcodes. Fixed a few bugs.
+
+= 1.0.5 =
+Fixed export bug.
+
+= 1.0.4 =
+Introduced warning messages for unsupported PHP / WP versions and missing tables. Updated templates to work with more themes. Updated event table install.
+
+= 1.0.3 =
+Fixed 'blank screen of death' for unsupported versions (WP < 3.3). The plug-in will still not operate correctly for versions before 3.3.
+
 = 1.0.2 =
 Fixed ics exporter and deactivation/uninstall
 
@@ -86,3 +104,8 @@ Minor bug fixes and readme update.
 
 = 1.0.0 =
 Initial release
+
+== Upgrade Notice ==
+
+= 1.0.4 =
+The templates have been adapted to work as is in for more themes. Error messages now display for unsupported versions.

@@ -1,33 +1,122 @@
 <?php
 
+
+	//Only call action if logged in
+	if(isset($_REQUEST['action'])):
+		switch($_REQUEST['action']):
+			case 'event-admin-cal': //The admin calendar
+				do_action( 'wp_ajax_' . $_REQUEST['action'] );
+				break;
+
+			case 'eventorganiser-fullcal': //The public 'full' calendar
+				do_action( 'wp_ajax_' . $_REQUEST['action'] );
+				do_action( 'wp_ajax_nopriv_' . $_REQUEST['action'] );
+				break;
+
+			case 'eo_widget_cal': //The mini / 'widget-sized' public calendar
+				do_action( 'wp_ajax_nopriv_' . $_REQUEST['action'] );
+				do_action( 'wp_ajax_' . $_REQUEST['action'] );	
+				break;
+			default;
+		endswitch;
+	endif;
+
+
+	/*
+	 * Public full calendar:
+	 * This gets events to be displayed on the front-end full calendar
+	*/
+	add_action( 'wp_ajax_eventorganiser-fullcal', 'eo_public_fullcal' ); 
+	add_action( 'wp_ajax_nopriv_eventorganiser-fullcal', 'eo_public_fullcal' ); 
+	function eo_public_fullcal() {
+		$request = array(
+			'start_before'=>$_GET['start'],
+			'end_after'=>$_GET['end']
+		);
+
+		//Retrieve events		
+		$events = eo_get_events(array('numberposts'=>-1, 'showrepeats'=>true));
+		$eventsarray = array();
+
+		//Loop through events
+		global $post;
+		if ($events) : 
+			foreach  ($events as $post) :
+				$event=array();
+				$event['className']=array('eo-event');
+
+				//Title and url
+				$event['title']=esc_js(get_the_title($post->ID));
+				$event['url']= esc_js(get_permalink( $post->ID));
+
+				//All day or not?
+				$event['allDay'] = ($post->event_allday ? true : false);
+	
+				//Get Event Start and End date, set timezone to the blog's timzone
+				$event_start = new DateTime($post->StartDate.' '.$post->StartTime, EO_Event::get_timezone());
+				$event_end = new DateTime($post->EndDate.' '.$post->FinishTime, EO_Event::get_timezone());
+				$event['start']= $event_start->format('Y-m-d\TH:i:s\Z');
+				$event['end']= $event_end->format('Y-m-d\TH:i:s\Z');	
+
+				//Colour past events
+				$now = new DateTIme(null,EO_Event::get_timezone());
+				$event['backgroundColor']=  '#21759B';	
+				if($event_start <= $now)
+					$event['className'][] = 'eo-past-event';
+				else
+					$event['className'][] = 'eo-future-event';
+				
+				//Include venue if this is set
+				if($post->Venue){
+					$event['className'][]= 'venue-'.eo_get_venue_slug($post->ID);
+					$event['venue']=$post->Venue;
+				}
+				
+				//Event categories
+				$terms = get_the_terms( $post->ID, 'event-category' );
+				$event['category']=array();
+				if($terms):
+					foreach ($terms as $term):
+						$event['category'][]= $term->slug;
+						$event['className'][]='category-'.$term->slug;
+					endforeach;
+				endif;
+
+				//Add event to array
+				$eventsarray[]=$event;
+			endforeach;
+		endif;
+
+		//Echo result and exit
+		echo json_encode($eventsarray);
+		exit;
+	}
+
 	/*
 	 * Admin calendar: Calendar View
 	 * This gets events and generates summaries for events to be displayed
 	 *  in the admin 'calendar view'
 	*/
-	
-	//Only call action if logged in
-	if(isset($_REQUEST['action'])&&$_REQUEST['action']=='event-admin-cal'):
-		do_action( 'wp_ajax_' . $_REQUEST['action'] );
-	endif;
-	add_action( 'wp_ajax_event-admin-cal', 'eo_ajax_admin_cal' );
-
- 
+	add_action( 'wp_ajax_event-admin-cal', 'eo_ajax_admin_cal' ); 
 	function eo_ajax_admin_cal() {
-		
-		//Get the dates being viewed
-		$end = date('Y-m-d',intval($_GET['end']));
-		$start = date('Y-m-d',intval($_GET['start']));
-	
-		//Retrieve events		
-		$query = new WP_Query( array( 
+		//request
+		$request = array(
+			'start_before'=>$_GET['start'],
+			'end_after'=>$_GET['end']
+		);
+
+		//Presets
+		$presets = array( 
 			'posts_per_page'=>-1,
 			'post_type'=>'event',
 			'showrepeats'=>true,
-			'perm' => 'readable',
-			'start_before'=>$end,
-			'end_after'=>$start ));
+			'perm' => 'readable');
 
+		//Create query
+		$query_array = array_merge($presets, $request);	
+		$query = new WP_Query($query_array );
+
+		//Retrieve events		
 		$query->get_posts();
 		$eventsarray = array();
 
@@ -35,7 +124,7 @@
 		global $post;
 		if ( $query->have_posts() ) : 
 			while ( $query->have_posts() ) : $query->the_post(); 
-
+				$event=array();
 				//Get title, append status if applicable
 				$title = get_the_title();
 				if(!empty($post->post_password)){
@@ -45,7 +134,7 @@
 				}elseif	($post->post_status=='draft'){
 					$title.=' - draft';
 				}
-				$event['title']=$title;
+				$event['title']=esc_js($title);
 
 				//Check if all day, set format accordingly
 				if($post->event_allday){
@@ -64,10 +153,10 @@
 				$event_end = new DateTime($post->EndDate.' '.$post->FinishTime, EO_Event::get_timezone());
 	
 				$event['start']= $event_start->format('Y-m-d\TH:i:s\Z');
-				$event['end']= $event_end->format('Y-m-d\TH:i:s\Z');
-	
+				$event['end']= $event_end->format('Y-m-d\TH:i:s\Z');	
 				//Colour past events
 				 $now = new DateTIme(null,EO_Event::get_timezone());
+
 				if($event_start <= $now){
 					$event['backgroundColor']=  '#74B2CD';	
 				}else{
@@ -80,9 +169,14 @@
 								."<tr><th> End: </th><td> ".$event_end->format($format)."</td></tr>"
 								."<tr><th> Organiser: </th><td>".$organiser."</td></tr>";
 	
+				$event['className']=array('event');
+
 				//Include venue if this is set
-				if($post->Venue)
+				if($post->Venue){
 					$summary .="<tr><th> Where: </th><td>".eo_get_venue_name((int)$post->Venue)."</td></tr>";
+					$event['className'][]= 'venue-'.eo_get_venue_slug($post->ID);
+					$event['venue']=$post->Venue;
+				}
 	
 				$summary .= "</table>";
 							
@@ -96,6 +190,14 @@
 					$summary .= "<span class='edit'><a title='Edit this item' href='".$edit_link."'> Edit Event</a></span>";
 					$event['url']= $edit_link;
 				}
+				$terms = get_the_terms( $post->ID, 'event-category' );
+				$event['category']=array();
+				if($terms):
+					foreach ($terms as $term):
+						$event['category'][]= $term->slug;
+						$event['className'][]='category-'.$term->slug;
+					endforeach;
+				endif;
 
 				$event['summary'] = $summary;
 
@@ -116,23 +218,14 @@
 	 * This gets the month being viewed and generates the
 	 * html code to view that month and its events. 
 	*/
-
-	//These calendars are public
-	if(isset($_REQUEST['action'])&&$_REQUEST['action']=='eo_widget_cal'):
-		do_action( 'wp_ajax_nopriv_' . $_REQUEST['action'] );
-		do_action( 'wp_ajax_' . $_REQUEST['action'] );
-	endif;
-
-	add_action( 'wp_ajax_nopriv_eo_widget_cal', 'ajax_widget_cal' );
+ 	add_action( 'wp_ajax_nopriv_eo_widget_cal', 'ajax_widget_cal' );
 	add_action( 'wp_ajax_eo_widget_cal', 'ajax_widget_cal' );
-
- 
 	function ajax_widget_cal() {
 
-		/*Retrieve the month we are after. $month must be the 
-		a DateTime object to the first of that month*/
+		/*Retrieve the month we are after. $month must be a 
+		DateTime object of the first of that month*/
 		if(isset($_GET['eo_month'])){
-			$month  = DateTime::createFromFormat('Y-m-d', $_GET['eo_month'].'-01');
+			$month  = new DateTime($_GET['eo_month'].'-01'); 
 		}else{
 			$month = new DateTime();
 			$month->modify('first day of this month');
