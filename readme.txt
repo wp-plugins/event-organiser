@@ -3,7 +3,7 @@ Contributors: stephenh1988
 Donate link: http://www.harriswebsolutions.co.uk/event-organiser/
 Tags: events, event, event organiser, event calendar, events calendar, event management, widget, venues, maps, gigs, shows,
 Requires at least: 3.3
-Tested up to: 3.3
+Tested up to: 3.3.1
 Stable tag: 1.1
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
