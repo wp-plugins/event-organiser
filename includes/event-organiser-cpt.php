@@ -42,7 +42,7 @@ add_action('init', 'eventorganiser_cpt_register');
 function eventorganiser_cpt_register() {
 $eventorganiser_option_array = get_option('eventorganiser_options'); 
   	$labels = array(
-		'name' => _x('Event', 'post type general name'),
+		'name' => _x('Events', 'post type general name'),
 		'singular_name' => _x('Event', 'post type singular name'),
 		'add_new' => _x('Add New', 'event'),
 		'add_new_item' => __('Add New Event'),
@@ -184,17 +184,17 @@ function eventorganiser_create_rewrite_rules() {
 }
 
 
+
 // This adds the Event Organiser icon to the page head
 add_action('admin_head', 'eventorganiser_plugin_header_image');
 function eventorganiser_plugin_header_image() {
         global $post_type;
-	?>
+
+	if ((isset($_GET['post_type']) && $_GET['post_type'] == 'event') || ($post_type == 'event')) : ?>
 	<style>
-	<?php if (($_GET['post_type'] == 'event') || ($post_type == 'event')) : ?>
 	#icon-edit { background:transparent url('<?php echo EVENT_ORGANISER_URL.'/css/images/eoicon-32.png';?>') no-repeat; }		
-	<?php endif; ?>
         </style>
-        <?php
+	<?php endif; 
 }
 
 // Filter wp_nav_menu() to add event link if selected in options
@@ -217,7 +217,8 @@ function eventorganiser_menu_link($items) {
 */
 add_action( 'contextual_help', 'eventorganiser_cpt_help_text', 10, 3 );
 function eventorganiser_cpt_help_text($contextual_help, $screen_id, $screen) { 
-
+	//The add_help_tab function for screen was introduced in WordPress 3.3
+	if(method_exists($screen, 'add_help_tab')):
 	switch($screen->id):
 		//Add help for event editing / creating page
 		case ('event'):
@@ -340,6 +341,7 @@ function eventorganiser_cpt_help_text($contextual_help, $screen_id, $screen) {
 
 	//Add a link to Event Organiser documentation on every page
 	$screen->set_help_sidebar( '<p> <strong> For more information</strong> </p><p>See the <a target="_blank" href="http://www.harriswebsolutions.co.uk/event-organiser/documentation/"> documentation</a></p>');
+	endif;
 
 	return $contextual_help;
 }

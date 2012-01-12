@@ -40,8 +40,7 @@ class EO_Calendar_Widget extends WP_Widget
  
  
   function widget($args, $instance){
-	wp_localize_script( 'eo_front', 'MyAjax', array('ajaxurl' => admin_url( 'admin-ajax.php')));
-	wp_print_scripts('eo_front');
+	wp_enqueue_script( 'eo_front');
 	extract($args, EXTR_SKIP);
 
 	//Set the month to display (DateTIme must be 1st of that month)
@@ -158,5 +157,4 @@ function generate_output($month,$args=array()){
  
 
 }
-add_action( 'widgets_init', create_function('', 'return register_widget("EO_Calendar_Widget");') );
-?>
+add_action( 'widgets_init', create_function('', 'return register_widget("EO_Calendar_Widget");') );?>

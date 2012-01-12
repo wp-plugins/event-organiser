@@ -43,11 +43,18 @@ get_header(); ?>
 						<?php } ?>
 		
 				<!-- Display the venue map. If you specify a class, ensure that class has height/width dimensions-->
-				<?php echo do_shortcode('[eo_venue_map width="600px"]'); ?>
+				<?php echo do_shortcode('[eo_venue_map width="100%"]'); ?>
 			</header><!-- end header -->
 
 				<!---- Navigate between pages-->
-				<?php twentyeleven_content_nav( 'nav-above' ); ?>
+				<!---- In TwentyEleven theme this is done by twentyeleven_content_nav-->
+				<?php 
+				if ( $wp_query->max_num_pages > 1 ) : ?>
+					<nav id="nav-above">
+						<div class="nav-next events-nav-newer"><?php next_posts_link( __( 'Later events <span class="meta-nav">&rarr;</span>' , 'eventorganiser' ) ); ?></div>
+						<div class="nav-previous events-nav-newer"><?php previous_posts_link( __( ' <span class="meta-nav">&larr;</span> Newer events', 'eventorganiser' ) ); ?></div>
+					</nav><!-- #nav-above -->
+				<?php endif; ?>
 
 				<!-- This is the usual loop, familiar in WordPress templates-->
 				<?php while ( have_posts()) : the_post(); ?>
@@ -73,7 +80,14 @@ get_header(); ?>
     				<?php endwhile; ?><!----The Loop ends-->
 
 				<!---- Navigate between pages-->
-				<?php twentyeleven_content_nav( 'nav-below' ); ?>
+				<?php 
+				global $wp_query;
+				if ( $wp_query->max_num_pages > 1 ) : ?>
+					<nav id="nav-below">
+						<div class="nav-next events-nav-newer"><?php next_posts_link( __( 'Later events <span class="meta-nav">&rarr;</span>' , 'eventorganiser' ) ); ?></div>
+						<div class="nav-previous events-nav-newer"><?php previous_posts_link( __( ' <span class="meta-nav">&larr;</span> Newer events', 'eventorganiser' ) ); ?></div>
+					</nav><!-- #nav-below -->
+				<?php endif; ?>
 
 			<?php else : ?>
 				<!---- If there are no events -->
