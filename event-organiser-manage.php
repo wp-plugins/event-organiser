@@ -5,31 +5,27 @@
  * @since 1.0.0
  */
 
-
 /**
  * Adds custom columns to Event CPT table
- *
  * @since 1.0.0
  */
 add_filter('manage_edit-event_columns', 'eventorganiser_event_add_columns');
 function eventorganiser_event_add_columns($columns) {
 
-	//Unset unnecessary columns
-	unset($columns['date']);
-	unset($columns['categories']);
+	unset($columns['date']);//Unset unnecessary columns
 
 	//Set 'title' column title
-	$columns['title'] = _x('Event', 'column name');
+	$columns['title'] =__('Event','eventorganiser');
 
 	//If displaying 'author', change title
 	if(isset($columns['author']))
-		$columns['author'] = __('Organizer');
+		$columns['author'] = __('Organiser','eventorganiser');
 
-	$columns['venue'] = _x('Venue', 'column name');
+	$columns['venue'] = __('Venue','eventorganiser');
 	$columns['eventcategories'] = __('Categories');
-	$columns['datestart'] = _x('Start Date/Time ', 'column name');
-	$columns['dateend'] = _x('End Date/Time', 'column name');
-	$columns['reoccurence'] = _x('Reoccurence', 'column name');
+	$columns['datestart'] = __('Start Date/Time','eventorganiser');
+	$columns['dateend'] = __('End Date/Time', 'eventorganiser');
+	$columns['reoccurence'] = __('Reoccurrence','eventorganiser'); 
 
 	return $columns;
 }
@@ -37,52 +33,46 @@ function eventorganiser_event_add_columns($columns) {
 
 /**
  * Registers the custom columns in Event CPT table to be sortable
- *
  * @since 1.0.0
  */
 add_filter( 'manage_edit-event_sortable_columns', 'eventorganiser_event_sortable_columns' );
 function eventorganiser_event_sortable_columns( $columns ) {
 	$columns['datestart'] = 'eventstart';
 	$columns['dateend'] = 'eventend';
- 
 	return $columns;
 }
 
 
-
 /**
  * What to display in custom columns of Event CPT table
- *
  * @since 1.0.0
  */
 add_action('manage_event_posts_custom_column', 'eventorganiser_event_sort_columns', 10, 2);
 function eventorganiser_event_sort_columns($column_name, $id) {
 	global $post;
 
-	$EO_Venue =new EO_Venue((int)$post->Venue);
+	$series_id = (empty($post->event_id) ? $id :'');
+	$EO_Venue =new EO_Venue((int)eo_get_venue($series_id));
 
 	$phpFormat = 'M, jS Y';
-	if(!$post->event_allday)
+	if(!eo_is_all_day($series_id))
 		$phpFormat .= '\<\/\b\r\>'. get_option('time_format');
-
+	
 	switch ($column_name) {
 		case 'venue':
 			echo "<a href='".add_query_arg( 'venue_id', $EO_Venue->id )."'>".$EO_Venue->name."</a>";
 			break;
 
 		case 'datestart':
-			eo_the_start($phpFormat);
+			eo_the_start($phpFormat,$series_id );
 			break;
 		
 		case 'dateend':
-			eo_the_end($phpFormat);
+			eo_the_end($phpFormat,$series_id );
 			break;
 
 		case 'reoccurence':
-			$summary =eo_get_schedule_summary();
-			if($summary && $post->event_schedule!='once')
-				$summary= 'Every '.$summary;
-			echo $summary;
+			eo_display_reoccurence($series_id );
 			break;
 
 		case 'eventcategories':
@@ -100,64 +90,61 @@ function eventorganiser_event_sort_columns($column_name, $id) {
 	} // end switch
 }
 
-  
-
-
-
-add_action( 'restrict_manage_posts', 'my_restrict_manage_posts' );
-function my_restrict_manage_posts() {
+/**
+ * Adds a drop-down filter to the Event CPT table by category
+ * @since 1.0.0
+ */
+add_action( 'restrict_manage_posts', 'restrict_events_by_category' );
+function restrict_events_by_category() {
 
     // only display these taxonomy filters on desired custom post_type listings
     global $typenow,$wp_query;
     if ($typenow == 'event') {
-
-            // retrieve the taxonomy object
-            $tax_obj = get_taxonomy('event-category');
-            $tax_name = $tax_obj->labels->name;
-
-            // retrieve array of term objects per taxonomy
-            $terms = get_terms('event-category');
-		 $selected=0;
-	
-		if(isset( $wp_query->query_vars['event-category'])) $selected = $wp_query->query_vars['event-category'];?>
-
-		<select name='event-category' id='event-category' class='postform'>
-			<option <?php selected($selected,0); ?> value="0"><?php _e('View All Event Categories', 'eventorganiser');?></option>
-			<?php foreach ($terms as $term): ?>
-				<option value="<?php echo $term->slug;?>" <?php selected($selected,$term->slug)?>> <?php echo $term->name;?> </option>
-			<?php endforeach; ?>
-		</select>
-		<?php
+	eo_event_category_dropdown(array('show_option_all' => __('View all categories')));
     }
 }
 
-
 /**
- * Adds a drop-down filter to the Event CPT table
- *
+ * Adds a drop-down filter to the Event CPT table by venue
  * @since 1.0.0
  */
 add_action('restrict_manage_posts','restrict_events_by_venue');
 function restrict_events_by_venue() {
 	global $typenow;
-	global $wp_query,$wpdb, $eventorganiser_venue_table;
 
 	//Only add if CPT is event
-	if ($typenow=='event') :
-		$selected=0;
-		if(!empty( $wp_query->query_vars['venue_id'] )) {
-			$selected = $wp_query->query_vars['venue_id'];
-		}
-		$The_Venues = $wpdb->get_results(" SELECT* FROM $eventorganiser_venue_table");?>
+	if ($typenow=='event') :	
+		 eo_event_venue_dropdown(array('show_option_all' => __('View all venues','eventorganiser')));
+	endif;
+}
 
-		<select id="HWSEventFilterVenue" name="venue_id">
-			<option <?php selected($selected,0); ?> value=""><?php _e('View All Venues', 'eventorganiser');?></option>
-			<?php foreach ($The_Venues as $index=>$venue): ?>
-				 <option value="<?php echo intval($venue->venue_id); ?>" <?php selected($venue->venue_id,$selected); ?> >
-					<?php _e($venue->venue_name,'eventorganiser'); ?>
-				</option>
-			<?php endforeach;  //End foreach $EventVenues?>
+/**
+ * Adds a drop-down filter to the Event CPT table by intervals
+ * @since 1.2.0
+ */
+add_action( 'restrict_manage_posts', 'eventorganiser_display_occurrences' );
+function eventorganiser_display_occurrences() {
+	global $typenow,$wp_query;
+	if ($typenow == 'event'):
+		$intervals = array(
+			'all'=>__('View all events','eventorganiser'),
+			'future'=>__('Future events','eventorganiser'),
+			'expired'=>__('Expired events','eventorganiser'),
+			'P1D'=>__('Events within 24 hours', 'eventorganiser'),
+			'P1W'=>__('Events within 1 week','eventorganiser'),
+			'P2W'=> sprintf(__('Events within %d weeks','eventorganiser'), 2),
+			'P1M'=>__('Events within 1 month','eventorganiser'),
+			'P6M'=> sprintf(__('Events within %d months','eventorganiser'), 6),
+			'P1Y'=>__('Events within 1 year','eventorganiser'),
+		);
+		$current = (!empty($wp_query->query_vars['eo_interval']) ? $wp_query->query_vars['eo_interval'] : 'all');	
+?>
+		<select style="width:150px;" name='eo_interval' id='show-events-in-interval' class='postform'>
+			<?php foreach ($intervals as $id=>$interval): ?>
+				<option value="<?php echo $id; ?>" <?php selected($current,$id)?>> <?php echo $interval;?> </option>
+			<?php endforeach; ?>
 		</select>
-	<?php endif; //End if CPT is event
+<?php
+	endif;//End if CPT is event
 }
 ?>

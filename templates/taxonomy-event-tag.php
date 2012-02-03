@@ -1,8 +1,6 @@
 <?php
 /**
- * The template for displaying lists of events
- *
- * Queries to do with events will default to this template if a more appropriate template cannot be found
+ * The template for displaying an event-tag page
  *
  ***************** NOTICE: *****************
  *  Do not make changes to this file. Any changes made to this file
@@ -15,7 +13,7 @@
  ***************** NOTICE: *****************
  *
  * @package Event Organiser (plug-in)
- * @since 1.0.0
+ * @since 1.2.0
  */
 
 //Call the template header
@@ -27,11 +25,18 @@ get_header(); ?>
 
 			<?php if ( have_posts() ) : ?>
 
-				<!---- Page header-->
+				<!---- Page header, display tag title-->
 				<header class="page-header">
-					<h1 class="page-title">
-						<?php _e('Events','eventorganiser'); ?>
-					</h1>
+					<h1 class="page-title"><?php
+						printf( __( 'Event Tag Archives: %s', 'eventorganiser' ), '<span>' . single_cat_title( '', false ) . '</span>' );
+					?></h1>
+
+				<!---- If the tag has a description display it-->
+					<?php
+						$tag_description = category_description();
+						if ( ! empty( $tag_description ) )
+							echo apply_filters( 'category_archive_meta', '<div class="category-archive-meta">' . $tag_description . '</div>' );
+					?>
 				</header>
 
 				<!---- Navigate between pages-->
@@ -46,9 +51,8 @@ get_header(); ?>
 				<?php endif; ?>
 
 				<?php /* Start the Loop */ ?>
-
 				<?php while ( have_posts() ) : the_post(); ?>
-
+								
 					<article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
 
 						<header class="entry-header">
@@ -80,12 +84,13 @@ get_header(); ?>
 				<?php 
 				if ( $wp_query->max_num_pages > 1 ) : ?>
 					<nav id="nav-below">
-						<div class="nav-next events-nav-newer"><?php next_posts_link( __( 'Later events <span class="meta-nav">&larr;</span>' , 'eventorganiser' ) ); ?></div>
-						<div class="nav-previous events-nav-newer"><?php previous_posts_link( __( ' <span class="meta-nav">&rarr;</span> Newer events', 'eventorganiser' ) ); ?></div>
+						<div class="nav-next events-nav-newer"><?php next_posts_link( __( 'Later events <span class="meta-nav">&rarr;</span>' , 'eventorganiser' ) ); ?></div>
+						<div class="nav-previous events-nav-newer"><?php previous_posts_link( __( ' <span class="meta-nav">&larr;</span> Newer events', 'eventorganiser' ) ); ?></div>
 					</nav><!-- #nav-below -->
 				<?php endif; ?>
 
 			<?php else : ?>
+
 				<!---- If there are no events -->
 				<article id="post-0" class="post no-results not-found">
 					<header class="entry-header">
@@ -93,7 +98,7 @@ get_header(); ?>
 					</header><!-- .entry-header -->
 
 					<div class="entry-content">
-						<p><?php _e( 'Apologies, but no results were found for the requested archive', 'eventorganiser' ); ?></p>
+						<p><?php _e( 'Apologies, but no events were found for the requested tag. ', 'eventorganiser' ); ?></p>
 					</div><!-- .entry-content -->
 				</article><!-- #post-0 -->
 
