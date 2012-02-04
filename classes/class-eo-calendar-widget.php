@@ -9,8 +9,9 @@ class EO_Calendar_Widget extends WP_Widget
 		);
 
   function EO_Calendar_Widget()  {
-	$widget_ops = array('classname' => 'widget_calendar', 'description' => 'Displays calendar' );
-	$this->WP_Widget('EO_Calendar_Widget', 'Events Calendar', $widget_ops);
+	load_plugin_textdomain( 'eventorganiser', false, EVENT_ORGANISER_I18N);
+	$widget_ops = array('classname' => 'widget_calendar', 'description' => __('Displays a calendar of your events','eventorganiser') );
+	$this->WP_Widget('EO_Calendar_Widget', __('Events Calendar','eventorganiser'), $widget_ops);
   }
  
 
@@ -19,11 +20,10 @@ class EO_Calendar_Widget extends WP_Widget
     $instance = wp_parse_args( (array) $instance, $this->w_arg );
 ?>
   <p>
-	  <label for="<?php echo $this->get_field_id('title'); ?>">TItle:  </label>
+	<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title', 'eventorganiser'); ?>: </label>
 	  <input id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $instance['title'];?>" />
   </p>
-  
-<?php
+  <?php
   }
  
 
@@ -40,8 +40,7 @@ class EO_Calendar_Widget extends WP_Widget
  
  
   function widget($args, $instance){
-	wp_localize_script( 'eo_front', 'MyAjax', array('ajaxurl' => admin_url( 'admin-ajax.php')));
-	wp_print_scripts('eo_front');
+	wp_enqueue_script( 'eo_front');
 	extract($args, EXTR_SKIP);
 
 	//Set the month to display (DateTIme must be 1st of that month)
@@ -61,6 +60,14 @@ class EO_Calendar_Widget extends WP_Widget
 
 
 function generate_output($month,$args=array()){
+	
+	//Translations
+	global $wp_locale;
+	$months = $wp_locale->month;
+	$monthsAbbrev = $wp_locale->month_abbrev;
+	$weekdays = $wp_locale->weekday;
+	$weekdays_initial =$wp_locale->weekday_initial;
+
 	//Month should be a DateTime object of the first day in that month		
 	$today = new DateTime();
 	if(empty($args))
@@ -98,23 +105,26 @@ function generate_output($month,$args=array()){
 		$date = esc_html($event->StartDate);
 		$tableArray[$date][]= $event->post_title;
 	endforeach;
-	
-	$daysofweek=array('S','M','T','W','T','F','S');
+
 
 	$before = "<table id='wp-calendar'>";
-	$title ="<caption>".$month->format('F Y')."</caption>";
+
+	$title ="<caption>".$months[$month->format('m')].' '.$month->format('Y')."</caption>";
 	$head="<thead><tr>";
 	for ($d=0; $d <= 6; $d++): 
-			$day = $daysofweek[($d+$startDay)%7];
+			$day = $weekdays_initial[$weekdays[($d+$startDay)%7]];
 			$head.="<th title='".$day."' scope='col'>".$day."</th>";
 	endfor;
 
 	$head.="</tr></thead>";
 
+	$prev = $months[$lastmonth->format('m')];
+	$next = $months[$nextmonth->format('m')];
+
 	$foot = "<tfoot><tr>";
-	$foot .="<td id='prev' colspan='3'><a title='Previous month'  href='?eo_month=".$lastmonth->format('Y-m')."'>&laquo; ".$lastmonth->format('M')."</a></td>";
+	$foot .="<td id='eo-widget-prev-month' colspan='3'><a title='".__('Previous month','eventorganiser')."' href='?eo_month=".$lastmonth->format('Y-m')."'>&laquo; ".$monthsAbbrev[$prev]."</a></td>";
 	$foot .="<td class='pad'>&nbsp;</td>";
-	$foot .="<td id='next' colspan='3'><a title='Next month' href='?eo_month=".$nextmonth->format('Y-m')."'>".$nextmonth->format('M')."&raquo; </a></td>";
+	$foot .="<td id='eo-widget-next-month' colspan='3'><a title='".__('Next month','eventorganiser')."' href='?eo_month=".$nextmonth->format('Y-m')."'>".$monthsAbbrev[$next]."&raquo; </a></td>";
 	$foot .= "</tr></tfoot>";
 
 	$body ="<tbody>";
@@ -126,7 +136,7 @@ function generate_output($month,$args=array()){
 	for($w = 0; $w <= $totalweeks-1; $w++):
 		$body .="<tr>";
 		$cell = $w*7;
- 		foreach ($daysofweek as $i => $day): 
+ 		foreach ($weekdays_initial as $i => $day): 
 			$cell = $cell+1;
 			if($cell<=$offset ||$cell-$offset > $daysinmonth): 
 					$body .="<td class='pad' colspan='1'>&nbsp;</td>";
@@ -158,5 +168,4 @@ function generate_output($month,$args=array()){
  
 
 }
-add_action( 'widgets_init', create_function('', 'return register_widget("EO_Calendar_Widget");') );
-?>
+add_action( 'widgets_init', create_function('', 'return register_widget("EO_Calendar_Widget");') );?>
