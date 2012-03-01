@@ -46,9 +46,9 @@ function eo_get_venue_slug($event_id=''){
 	if(empty($event->Venue))
 		return false;
 
-	$EO_Venue = new EO_Venue($event->Venue);
+	$EO_Venue = new EO_Venue((int)$event->Venue);
 
-	if($EO_Venue->is_found()) 
+	if(isset($EO_Venue) && $EO_Venue->is_found())
 		return $EO_Venue->slug;
 
 	return false;
@@ -75,7 +75,7 @@ function eo_get_venue_name($venue_slug_or_id=''){
 		$EO_Venue = new EO_Venue((int) $post->Venue);
 	}
 	
-	if($EO_Venue->is_found()) 
+	if(isset($EO_Venue) && $EO_Venue->is_found())
 		return $EO_Venue->name;
 	
 	return false;
@@ -113,10 +113,13 @@ function eo_get_venue_description($venue_slug_or_id=''){
 		$EO_Venue = new EO_Venue((int) $post->Venue);
 	}
 	
-	if($EO_Venue->is_found()) 
-		return $EO_Venue->description;
-	
-	return false;
+	if(empty($EO_Venue) || !$EO_Venue->is_found()) 
+		return false;
+
+	$description =$EO_Venue->description;
+	$description = apply_filters('the_content', $description);
+
+	return $description;
 }
 
 
@@ -157,7 +160,7 @@ function eo_get_venue_latlng($venue_slug_or_id=''){
 		$EO_Venue = new EO_Venue((int) $post->Venue);
 	}
 
-	if($EO_Venue->is_found()) 
+	if(isset($EO_Venue) && $EO_Venue->is_found()) 
 		return array('lat'=>$EO_Venue->latitude,'lng'=>$EO_Venue->longitude);
 	
 	return array('lat'=>0, 'lng'=>0);
@@ -215,7 +218,7 @@ function eo_get_venue_link($venue_slug_or_id=''){
 		$EO_Venue = new EO_Venue((int) $post->Venue);
 	}
 
-	if($EO_Venue->is_found()) 
+	if(isset($EO_Venue) && $EO_Venue->is_found())
 		return $EO_Venue->get_the_link();
 
 	return false; 
@@ -259,7 +262,7 @@ function eo_get_venue_address($venue_slug_or_id=''){
 	$address['postcode'] = '';
 	$address['country'] = '';
 
-	if($EO_Venue->is_found()){
+	if(isset($EO_Venue) && $EO_Venue->is_found()){
 		$address['address'] = $EO_Venue->address;
 		$address['postcode'] = $EO_Venue->postcode;
 		$address['country'] = $EO_Venue->country;
@@ -268,4 +271,55 @@ function eo_get_venue_address($venue_slug_or_id=''){
 	return $address;
 }
 
+function eo_get_the_venues(){
+	global $eventorganiser_venue_table,$wpdb;
+	//TODO take care of sanitisation?
+	$venues = $wpdb->get_results(" SELECT* FROM $eventorganiser_venue_table");
+	return $venues;
+}
+
+
+function eo_event_venue_dropdown( $args = '' ) {
+	$defaults = array(
+		'show_option_all' =>'', 
+		'echo' => 1,
+		'selected' => 0, 
+		'name' => 'venue_id', 
+		'id' => '',
+		'class' => 'postform event-organiser event-venue-dropdown event-dropdown', 
+		'tab_index' => 0, 
+	);
+
+	$defaults['selected'] =  (eo_is_venue() ? get_query_var('venue_id') : 0);
+	$r = wp_parse_args( $args, $defaults );
+	$r['taxonomy']='event-category';
+	extract( $r );
+
+	$tab_index_attribute = '';
+	if ( (int) $tab_index > 0 )
+		$tab_index_attribute = " tabindex=\"$tab_index\"";
+
+	$venues =  eo_get_the_venues();
+	$name = esc_attr( $name );
+	$class = esc_attr( $class );
+	$id = $id ? esc_attr( $id ) : $name;
+
+	$output = "<select style='width:150px' name='$name' id='$id' class='$class' $tab_index_attribute>\n";
+
+	if ( $show_option_all ) {
+		$output .= '<option '.selected($selected,0,false).' value="0">'.$show_option_all.'</option>';
+	}
+
+	if ( ! empty( $venues ) ) {
+		foreach ($venues as $term):
+			$output .= '<option value="'.intval($term->venue_id).'"'.selected($selected,$term->venue_id,false).'>'.esc_attr($term->venue_name).'</option>';
+		endforeach; 
+	}
+	$output .= "</select>\n";
+
+	if ( $echo )
+		echo $output;
+
+	return $output;
+}
 ?>

@@ -4,10 +4,9 @@ Plugin Name: Event Organiser
 Plugin URI: http://www.HarrisWebSolutions.co.uk/event-organiser
 Description: Creates a custom post type 'events' with features such as reoccurring events, venues, Google Maps, calendar views and events and venue pages
 Author: Stephen Harris
-Version: 1.0.2
+Version: 1.2.4
 Author URI: http://www.HarrisWebSolutions.co.uk
 */
-
 /*  Copyright 2011 Stephen Harris (stephen@harriswebsolutions.co.uk)
 
 	This program is free software; you can redistribute it and/or modify
@@ -27,7 +26,7 @@ Author URI: http://www.HarrisWebSolutions.co.uk
 
 //The database version
 global $eventorganiser_db_version;
-$eventorganiser_db_version = "1.0";
+$eventorganiser_db_version = "1.2.4";
 
 global $wpdb;
 
@@ -40,17 +39,24 @@ $eventorganiser_venue_table = $wpdb->prefix."eo_venues";
 //Set the wp-content and plugin urls/paths
 define('EVENT_ORGANISER_URL',plugin_dir_url(__FILE__ ));
 define('EVENT_ORGANISER_DIR',plugin_dir_path(__FILE__ ));
+define('EVENT_ORGANISER_I18N',basename(dirname(__FILE__)).'/languages');
+
+/****** Load translations ******/
+add_action('init', 'eventorganiser_i18n');
+function eventorganiser_i18n() {
+	load_plugin_textdomain( 'eventorganiser', false, EVENT_ORGANISER_I18N);
+}
 
 global $eventorganiser_roles;
 $eventorganiser_roles = array(
-		 'edit_events' =>'Edit Events',
-		 'publish_events' =>'Publish Events',
-		 'delete_events' => 'Delete Events',
-		'edit_others_events' =>'Edit Others\' Events',
-		 'delete_others_events' => 'Delete Other\'s Events',
-		'read_private_events' =>'Read Private Events',
-		 'manage_venues' => 'Manage Venues',
-		 'manage_event_categories' => 'Manage Event Categories',
+		 'edit_events' =>__('Edit Events','eventorganiser'),
+		 'publish_events' =>__('Publish Events','eventorganiser'),
+		 'delete_events' => __('Delete Events','eventorganiser'),
+		'edit_others_events' =>__('Edit Others\' Events','eventorganiser'),
+		 'delete_others_events' => __('Delete Other\'s Events','eventorganiser'),
+		'read_private_events' =>__('Read Private Events','eventorganiser'),
+		 'manage_venues' => __('Manage Venues','eventorganiser'),
+		 'manage_event_categories' => __('Manage Event Categories & Tags','eventorganiser'),
 );
 			
 /****** Install, activation & deactivation******/
@@ -69,7 +75,11 @@ require_once('includes/event-organiser-register.php');
 /****** Deals with the queries******/
 require_once('includes/event-organiser-archives.php');
 
+/****** Deals with importing/exporting & subscriptions******/
+require_once("includes/class-event-organiser-im-export.php");
+
 if(is_admin()):
+	require_once('classes/class-eventorganiser-admin-page.php');
 	/****** event editing pages******/
 	require_once('event-organiser-edit.php');
 	require_once('event-organiser-manage.php');
@@ -78,13 +88,11 @@ if(is_admin()):
 	require_once('event-organiser-settings.php');
 	require_once('event-organiser-venues.php');
 	require_once('event-organiser-calendar.php');
-	require_once("includes/class-event-organiser-im-export.php");
 	require_once("classes/class-eo-list-table.php");
 endif;
 
-/****** Ajax files ******/
-require_once('includes/event-organiser-venue-search.php');
-require_once('includes/event-organiser-events-cal.php');
+/****** Ajax actions ******/
+require_once('includes/event-organiser-ajax.php');
 
 /****** Templates ******/
 require_once('includes/event-organiser-templates.php');
@@ -99,10 +107,8 @@ require_once("classes/class-eo-venues.php");
 require_once("classes/class-eo-venue.php");
 
 /****** Widgets and Shortcodes ******/
+require_once('classes/class-eo-agenda-widget.php');
 require_once('classes/class-eo-event-list-widget.php');
-require_once('classes/class-eo-event-list-shortcode.php');
 require_once('classes/class-eo-calendar-widget.php');
-require_once('classes/class-eo-calendar-shortcode.php');
-require_once('classes/class-eo-venue-map-shortcode.php');
-
+require_once('classes/class-eventorganiser-shortcodes.php');
 ?>
