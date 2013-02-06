@@ -39,14 +39,34 @@ jQuery(document).ready(function () {
 	}
 
 
-	if ($(".eo-venue-map").length > 0) {
-		if (EOAjax.map !== undefined) {
-			var script = document.createElement("script");
-                	script.type = "text/javascript";
-                	script.src = "http://maps.googleapis.com/maps/api/js?sensor=false&callback=eo_load_map";
-                	document.body.appendChild(script)
-            }
-        }
+	if( $('#eo-upcoming-dates').length>0 && $('#eo-upcoming-dates').find('li:gt(4)').length > 0 ){
+		var eobloc = 5;
+		var locale = { more : EOAjaxFront.locale.ShowMore, less : EOAjaxFront.locale.ShowLess};
+		$('#eo-upcoming-dates').find('li:gt('+(eobloc-1)+')').hide().end().after(
+	    		$('<a href="#" id="eo-upcoming-dates-less">'+locale.less+'</a> <span id="eo-upcoming-dates-pipe">|</span> <a href="#" id="eo-upcoming-dates-more">'+locale.more+'</a>')
+		);
+		$('#eo-upcoming-dates-pipe').hide();
+		$('#eo-upcoming-dates-less').hide().click(function(e){
+			e.preventDefault();
+			var index = Math.floor( ($('#eo-upcoming-dates li:visible').length -1) / eobloc)*eobloc -1;
+			$('#eo-upcoming-dates li:gt('+index+')').hide();
+			$('#eo-upcoming-dates-more,#eo-upcoming-dates-pipe').show();
+			if( $('#eo-upcoming-dates li:visible').length <= eobloc ){
+					$('#eo-upcoming-dates-less,#eo-upcoming-dates-pipe').hide();
+			}
+		});
+		$('#eo-upcoming-dates-more').click(function(e){
+			e.preventDefault();
+			$('#eo-upcoming-dates-less,#eo-upcoming-dates-pipe, #eo-upcoming-dates li:hidden:lt('+eobloc+')').show();
+			var offset = $('#eo-upcoming-dates-pipe').offset();
+			$('html, body').animate({
+				scrollTop: Math.max( offset.top + 40 - $(window).height(),$(window).scrollTop())
+			});
+			if( $('#eo-upcoming-dates li:hidden').length == 0 ){
+				$('#eo-upcoming-dates-more,#eo-upcoming-dates-pipe').hide();
+			}
+		});
+	}
 
         if ($(".eo-fullcalendar").length > 0) {
 		var calendars = EOAjax.calendars;
@@ -63,8 +83,8 @@ jQuery(document).ready(function () {
 
                 	$(calendar).fullCalendar({
 				id: calendar,
-				category: calendars[i].category,
-				venue: calendars[i].venue,
+				category: calendars[i].event_category,
+				venue: calendars[i].event_venue,
 				customButtons:{
 					category:  eventorganiser_cat_dropdown,
 					venue:  eventorganiser_venue_dropdown,
@@ -272,11 +292,16 @@ jQuery(document).ready(function () {
                         var currentList = $('<li class="date" >' + a[i].display + '<ul class="a-date"></ul></li>');
                         dateList.append(currentList)
                     }
+		if( b.add_to_google ){
                     var c = $('<li class="event"></li>').append('<span class="cat"></span><span><strong>' + a[i].time + ": </strong></span>" + a[i]
                         .post_title)
                         .append('<div class="meta" style="display:none;"><span>' + a[i].link + "</span><span>   </span><span>" + a[i]
                         .Glink + "</span></div>");
-                    c.find("span.cat")
+		}else{
+                    var c = $('<li class="event"></li>').append("<a class='eo-agenda-event-permalink' href='"+a[i].event_url+"'><span class='cat'></span><span><strong>" + a[i].time + ": </strong></span>" + a[i]
+                        .post_title+"</a>")
+		}
+                 c.find("span.cat")
                         .css({
                         background: a[i].color
                     });

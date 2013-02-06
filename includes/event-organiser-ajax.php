@@ -76,7 +76,8 @@ function eventorganiser_public_fullcalendar() {
 
 			//Title and url
 			$event['title']=html_entity_decode(get_the_title($post->ID),ENT_QUOTES,'UTF-8');
-			$event['url'] = apply_filters('eventorganiser_calendar_event_link',esc_js(get_permalink( $post->ID)),$post->ID,$post->event_id);
+			$link = esc_js(get_permalink( $post->ID));
+			$event['url'] = apply_filters('eventorganiser_calendar_event_link',$link,$post->ID,$post->occurrence_id);
 
 			//All day or not?
 			$event['allDay'] = eo_is_all_day();
@@ -122,7 +123,7 @@ function eventorganiser_public_fullcalendar() {
 			}
 			$description = $date.'</br></br>'.$description;
 			
-			$event['description']  = apply_filters('eventorganiser_event_tooltip', $description, $post->ID,$post->event_id,$post);
+			$event['description']  = apply_filters('eventorganiser_event_tooltip', $description, $post->ID,$post->occurrence_id,$post);
 
 			//Colour past events
 			$now = new DateTime(null,$tz);
@@ -154,7 +155,7 @@ function eventorganiser_public_fullcalendar() {
 				$event['color'] = eo_get_event_color();
 
 			//Add event to array
-			$event = apply_filters('eventorganiser_fullcalendar_event',$event, $post->ID,$post->event_id);
+			$event = apply_filters('eventorganiser_fullcalendar_event',$event, $post->ID,$post->occurrence_id);
 			if( $event )
 				$eventsarray[]=$event;
 
@@ -279,7 +280,7 @@ function eventorganiser_admin_calendar() {
 					$event['venue']=$venue;
 				}
 						
-				$summary = apply_filters('eventorganiser_admin_cal_summary',$summary,$post->ID,$post->event_id,$post);
+				$summary = apply_filters('eventorganiser_admin_cal_summary',$summary,$post->ID,$post->occurrence_id,$post);
 	
 				$summary .= "</table><p>";
 							
@@ -304,11 +305,11 @@ function eventorganiser_admin_calendar() {
 						'post_type'=>'event',
 						'page'=>'calendar',
 						'series'=>$post->ID,
-						'event'=>$post->event_id,
+						'event'=>$post->occurrence_id,
 						'action'=>'delete_occurrence'
 					),$admin_url);
 
-					$delete_url  = wp_nonce_url( $delete_url , 'eventorganiser_delete_occurrence_'.$post->event_id);
+					$delete_url  = wp_nonce_url( $delete_url , 'eventorganiser_delete_occurrence_'.$post->occurrence_id);
 
 					$summary .= "<span class='delete'>
 					<a class='submitdelete' style='color:red;float:right' title='".__('Delete this occurrence','eventorganiser')."' href='".$delete_url."'> ".__('Delete this occurrence','eventorganiser')."</a>
@@ -319,10 +320,10 @@ function eventorganiser_admin_calendar() {
 							'post_type'=>'event',
 							'page'=>'calendar',
 							'series'=>$post->ID,
-							'event'=>$post->event_id,
+							'event'=>$post->occurrence_id,
 							'action'=>'break_series'
 						),$admin_url);
-						$break_url  = wp_nonce_url( $break_url , 'eventorganiser_break_series_'.$post->event_id);
+						$break_url  = wp_nonce_url( $break_url , 'eventorganiser_break_series_'.$post->occurrence_id);
 
 						$summary .= "<span class='break'>
 						<a class='submitbreak' style='color:red;float:right;padding-right: 2em;' title='".__('Break this series','eventorganiser')."' href='".$break_url."'> ".__('Break this series','eventorganiser')."</a>
@@ -440,7 +441,7 @@ function eventorganiser_widget_agenda() {
 		$query['date'] = ($query['direction'] <1? $_GET['start'] : $_GET['end']);
 		$query['order'] = ($query['direction'] <1? 'DESC' : 'ASC');
 
-		$key = 'eo_ag_'.md5(serialize($query));
+		$key = 'eo_ag_'.md5(serialize($query)).get_locale();
 		$agenda = get_transient('eo_widget_agenda');
 		if( $agenda && is_array($agenda) && isset($agenda[$key]) ){
 			echo json_encode($agenda[$key]);
@@ -515,6 +516,7 @@ function eventorganiser_widget_agenda() {
 				'time'=> ( ($instance['mode']=='day' && eo_is_all_day())  ? __('All Day','eventorganiser') : eo_get_the_start($instance['item_format']) ),
 				'post_title'=>get_the_title(),
 				'color'=>eo_get_event_color(),
+				'event_url'=>get_permalink(),
 				'link'=>'<a href="'.get_permalink().'">'.__('View','eventorganiser').'</a>',
 				'Glink'=>'<a href="'.eo_get_the_GoogleLink().'" target="_blank">'.__('Add To Google Calendar','eventorganiser').'</a>'
 			);
@@ -547,20 +549,21 @@ function eventorganiser_search_venues() {
 
 		foreach($venues as $venue){
 			$venue_id = (int) $venue->term_id;
+
 			if( !isset($term->venue_address) ){
+				/* This is all deprecated - use the API {@link http://wp-event-organiser.com/documentation/function/eo_get_venue_address/} */
 				$address = eo_get_venue_address($venue_id);
 				$venue->venue_address =  isset($address['address']) ? $address['address'] : '';
-				$venue->venue_postal =  isset($address['postcode']) ? $address['postcode'] : '';
+				$venue->venue_postal =  isset($address['postcode']) ? $address['postcode'] : ''; 
+				$venue->venue_postcode =  isset($address['postcode']) ? $address['postcode'] : '';
+				$venue->venue_city =  	isset($address['city']) ? $address['city'] : '';
 				$venue->venue_country =  isset($address['country']) ? $address['country'] : '';
+				$venue->venue_state =  isset($address['state']) ? $address['state'] : '';
 			}
 
 			if( !isset($venue->venue_lat) || !isset($venue->venue_lng) ){
 				$venue->venue_lat =  number_format(floatval(eo_get_venue_lat($venue_id)), 6);
 				$venue->venue_lng =  number_format(floatval(eo_get_venue_lng($venue_id)), 6);
-			}
-
-			if( !isset($venue->venue_description) ){
-				$venue->venue_description = eo_get_venue_description($venue_id);
 			}
 		}
 		

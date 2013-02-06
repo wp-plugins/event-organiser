@@ -9,7 +9,7 @@
  */
 function eventorganiser_register_script() {
 	global $wp_locale;
-	$version = '1.6.3';
+	$version = '1.7';
 
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
 
@@ -19,7 +19,14 @@ function eventorganiser_register_script() {
 		'jquery-ui-core',
 		'jquery-ui-widget',
 		'jquery-ui-button',
-	),$version,true);	
+	),$version,true);
+	
+	/* Google Maps */
+	$protocal = is_ssl() ? 'https://' : 'http://';
+	if( is_admin() )
+		wp_register_script( 'eo_GoogleMap', $protocal.'maps.googleapis.com/maps/api/js?sensor=false&language='.substr(get_locale(),0,2));
+	else
+		wp_register_script( 'eo_GoogleMap', $protocal.'maps.googleapis.com/maps/api/js?sensor=false&callback=eo_load_map&language='.substr(get_locale(),0,2));
 
 	/* Front-end script */
 	wp_register_script( 'eo_front', EVENT_ORGANISER_URL."js/frontend{$ext}.js",array(
@@ -28,17 +35,20 @@ function eventorganiser_register_script() {
 		'jquery-ui-widget',
 		'jquery-ui-button',
 		'jquery-ui-datepicker',
-		'eo_fullcalendar'	
+		'eo_fullcalendar',
 	),$version,true);
 	
 	/* Add js variables to frontend script */
 	wp_localize_script( 'eo_front', 'EOAjaxFront', array(
 			'adminajax'=>admin_url( 'admin-ajax.php'),
 			'locale'=>array(
+				'locale' => substr(get_locale(),0,2),
 				'monthNames'=>array_values($wp_locale->month),
 				'monthAbbrev'=>array_values($wp_locale->month_abbrev),
 				'dayNames'=>array_values($wp_locale->weekday),
 				'dayAbbrev'=>array_values($wp_locale->weekday_abbrev),
+				'ShowMore'=>__('Show More','eventorganiser'),
+				'ShowLess'=>__('Show Less','eventorganiser'),
 				'today'=>__('today','eventorganiser'),
 				'day'=>__('day','eventorganiser'),
 				'week'=>__('week','eventorganiser'),
@@ -66,11 +76,8 @@ add_action('init', 'eventorganiser_register_script');
  * @access private
  */
 function eventorganiser_register_scripts(){
-	$version = '1.6.3';
+	$version = '1.7';
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
-
-	/* Google Maps */
-	wp_register_script( 'eo_GoogleMap', 'http://maps.googleapis.com/maps/api/js?sensor=true');
 
 	/*  Venue scripts for venue & event edit */
 	wp_register_script( 'eo_venue', EVENT_ORGANISER_URL."js/venues{$ext}.js",array(
@@ -157,6 +164,8 @@ function eventorganiser_add_admin_scripts( $hook ) {
 						'monthNames'=>array_values($wp_locale->month),
 						'monthAbbrev'=>array_values($wp_locale->month_abbrev),
 						'dayAbbrev'=>array_values($wp_locale->weekday_abbrev),
+						'showDates' => __( 'Show dates', 'eventorganiser' ),
+						'hideDates' => __( 'Hide dates', 'eventorganiser' ),
 						'weekDay'=>$wp_locale->weekday,
 						'hour'=>__('Hour','eventorganiser'),
 						'minute'=>__('Minute','eventorganiser'),
@@ -412,6 +421,7 @@ $hooks = array(
 	'eventorganiser_save_event', 'eventorganiser_delete_event', 'wp_trash_post','update_option_gmt_offset', /* obvious */
 	'update_option_start_of_week', /* Start of week is used for calendars */
 	'update_option_rewrite_rules', /* If permalinks updated - links on fullcalendar might now be invalid */ 
+	'delete_option_rewrite_rules',
 	'edited_event-category', /* Colours of events may change */
 );
 foreach( $hooks as $hook ){
@@ -472,24 +482,223 @@ add_action( 'admin_enqueue_scripts', 'eventorganiser_pointer_load',99999);
 
 
 /**
- * Adds pointer for 1.5
+ * Handles admin notices
+ *
+ * This is a class which automates (semi-permant) admin notices. This are notices which persist until an 
+ * action is performed or they are manually dismissed by the user. The EO_Admin_Notice_Handle::admin_notice()
+ * generates the mark-up for the notices, and displays them on the appropriate screen. It also triggers printing
+ * javascript so that notices can be dismissed via AJAX. There is also a no-js fallback.
  *
  *@access private
  *@ignore
- *@since 1.5
+ *@since 1.7
  */
-function eventorganiser_occurrencepicker_pointer( $p ){
-	$p['occpicker150'] =array(	
-		'target' =>'.eo_occurrence_toogle',
-		'options'=>array(
-					'content'  => sprintf('<h3> %s </h3> <p> %s </p>',
-							__( 'New Feature: Add / Remove Dates' ,'eventorganiser'),
-							 __( 'This link reveals a datepicker which highlights the dates on which the event occurs. Click a date to add or remove it from the event\'s schedule.','eventorganiser')
-							),
-					'position' => array('edge' => 'left', 'align' => 'middle'),
-					)
-	); 
-	return $p;
+class EO_Admin_Notice_Handler{
+
+	static $prefix = 'eventorganiser';
+
+	/**
+	 * Hooks the dismiss listener (ajax and no-js) and maybe shows notices on admin_notices
+	*/
+	static function load(){
+		add_action( 'admin_notices', array(__CLASS__,'admin_notice'));
+		add_action( 'admin_init',array(__CLASS__, 'dismiss_handler'));
+	        add_action( 'wp_ajax_'.self::$prefix.'-dismiss-notice', array( __CLASS__, 'dismiss_handler' ) );
+	}
+
+	/**
+	 * Print appropriate notices.
+	 * Hooks EO_Admin_Notice_Handle::print_footer_scripts to admin_print_footer_scripts to
+	 * print js to handle AJAX dismiss.
+	*/
+	static function admin_notice(){
+
+		$screen_id = get_current_screen()->id;
+
+		//Notices of the form ID=> array('screen_id'=>screen ID, 'message' => Message,'type'=>error|alert)
+		$notices = array(
+			'autofillvenue17'=>array(
+				'screen_id'=>'event_page_venues',
+				'message' => sprintf(__("<h4>City & State Fields Added</h4>City and state / province fields for venues have now been added. </br> If you'd like, Event Organiser can <a href='%s'>attempt to auto-fill them</a>. You can always manually change the details aftewards.",'eventorganiser'),
+								add_query_arg('action','eo-autofillcity',admin_url('admin-post.php'))
+								),
+				'type' => 'alert'
+			),
+			'changedtemplate17'=>array(
+				'screen_id'=>'',
+				'message' => __("<h4>The Default Templates Have Changed</h4>Don't panic! If you've set up your own templates in your theme you won't notice any change. </br> If you haven't and want the old templates back, <a href='http://wp-event-organiser.com/blog/new-default-templates-in-1-7'>see this post<a/>.",'eventorganiser'),
+				'type' => 'alert'
+			),
+		);
+
+		if( !$notices )
+			return;
+
+		$seen_notices = get_option(self::$prefix.'_admin_notices',array());
+
+		foreach( $notices as $id => $notice ){
+			$id = sanitize_key($id);
+
+			//Notices cannot have been dismissed and must have a message
+			if( in_array($id, $seen_notices)  || empty($notice['message'])  )
+				continue;
+
+			$notice_screen_id = (array) $notice['screen_id'];
+			$notice_screen_id = array_filter($notice_screen_id);
+		
+			//Notices must for this screen. If empty, its for all screens.
+			if( !empty($notice_screen_id) && !in_array($screen_id, $notice_screen_id) )
+				continue;
+
+			$class = $notice['type'] == 'error' ? 'error' : 'updated';
+	
+			printf("<div class='%s-notice {$class}' id='%s'>%s<p> <a class='%s' href='%s' title='%s'><strong>%s</strong></a></p></div>",
+						esc_attr(self::$prefix),
+						esc_attr(self::$prefix.'-notice-'.$id),
+						$notice['message'],
+						esc_attr(self::$prefix.'-dismiss'),
+						esc_url(add_query_arg(array(
+								'action'=>self::$prefix.'-dismiss-notice',
+								'notice'=>$id,
+								'_wpnonce'=>wp_create_nonce(self::$prefix.'-dismiss-'.$id),
+							))),
+						__('Dismiss this notice','eventorganiser'),
+						__('Dismiss','eventorganiser')
+					);
+		}
+        	add_action( 'admin_print_footer_scripts', array( __CLASS__, 'print_footer_scripts' ), 11 );
+
+	}
+
+	/**
+	 * Handles AJAX and no-js requests to dismiss a notice
+	*/
+	static function dismiss_handler(){
+
+		$notice = isset($_REQUEST['notice']) ? $_REQUEST['notice'] : false;
+		if( empty($notice) )
+			return;
+
+		if ( defined('DOING_AJAX') && DOING_AJAX ){
+			//Ajax dismiss handler
+			if( empty($_REQUEST['notice'])  || empty($_REQUEST['_wpnonce'])  || $_REQUEST['action'] !== self::$prefix.'-dismiss-notice' )
+				return;
+	
+			if( !wp_verify_nonce( $_REQUEST['_wpnonce'],self::$prefix."-ajax-dismiss") )
+				return;
+
+		}else{
+			//Fallback dismiss handler
+			if( empty($_REQUEST['action']) || empty($_REQUEST['notice'])  || empty($_REQUEST['_wpnonce'])  || $_REQUEST['action'] !== self::$prefix.'-dismiss-notice' )
+				return;
+
+			if( !wp_verify_nonce( $_REQUEST['_wpnonce'],self::$prefix.'-dismiss-'.$notice ) )
+			return;
+		}
+
+		self::dismiss_notice($notice);
+
+		if ( defined('DOING_AJAX') && DOING_AJAX )
+			wp_die(1);
+	}
+
+	/**
+	 * Dismiss a given a notice
+	 *@param string $notice The notice (ID) to dismiss
+	*/
+	static function dismiss_notice($notice){
+		$seen_notices = get_option(self::$prefix.'_admin_notices',array());
+		$seen_notices[] = $notice;
+		$seen_notices = array_unique($seen_notices);
+		update_option(self::$prefix.'_admin_notices',$seen_notices);
+	}
+
+	/**
+	 * Prints javascript in footer to handle AJAX dismiss.
+	*/
+	static function print_footer_scripts() {
+		?>
+		<script type="text/javascript">
+			jQuery(document).ready(function ($){
+				var dismissClass = '<?php echo esc_js(self::$prefix."-dismiss");?>';
+        			var ajaxaction = '<?php echo esc_js(self::$prefix."-dismiss-notice"); ?>';
+				var _wpnonce = '<?php echo wp_create_nonce(self::$prefix."-ajax-dismiss")?>';
+				var noticeClass = '<?php echo esc_js(self::$prefix."-notice");?>';
+
+				jQuery('.'+dismissClass).click(function(e){
+					e.preventDefault();
+					var noticeID= $(this).parents('.'+noticeClass).attr('id').substring(noticeClass.length+1);
+
+					$.post(ajaxurl, {
+						action: ajaxaction,
+						notice: noticeID,
+						_wpnonce: _wpnonce
+					}, function (response) {
+						if ('1' === response) {
+							$('#'+noticeClass+'-'+noticeID).fadeOut('slow');
+			                    } else {
+							$('#'+noticeClass+'-'+noticeID).removeClass('updated').addClass('error');
+                    		 	   }
+                			});
+				});
+        		});
+		</script><?php
+	}
+}//End EO_Admin_Notice_Handler
+EO_Admin_Notice_Handler::load();
+
+
+/**
+ * Handles city auto-fill request.
+ *
+ * Hooked onto admin_post_eo-autofillcity. Triggered when user clicks 'autofill' link.
+ * This routine goes through all the venues, reverse geocodes to find their city and 
+ * autofills the city field (added in 1.7).
+ *
+ *@ignore
+ *@access private
+ *@link https://github.com/stephenh1988/Event-Organiser/issues/18
+ *@link http://open.mapquestapi.com/nominatim/ Nominatim Search Service
+ */
+function _eventorganiser_autofill_city(){
+	$seen_notices = get_option('eventorganiser_admin_notices',array());
+
+	if( in_array('autofillvenue17', $seen_notices) )
+		return;
+
+	EO_Admin_Notice_Handler::dismiss_notice('autofillvenue17');
+
+	$cities =array();
+	$venues = eo_get_venues();
+
+	foreach( $venues as $venue ){
+		$venue_id = (int) $venue->term_id;
+		$latlng =extract(eo_get_venue_latlng($venue_id));
+
+		If( eo_get_venue_meta($venue_id,'_city',true) )
+			continue;
+
+		$response=wp_remote_get("http://open.mapquestapi.com/nominatim/v1/reverse?format=json&lat={$lat}&lon={$lng}&osm_type=N&limit=1");	
+		$geo = json_decode(wp_remote_retrieve_body( $response ));
+		if( isset($geo->address->city) ){
+			$cities[$venue_id] = $geo->address->city;
+			eo_update_venue_meta($venue_id, '_city', $geo->address->city);
+		}
+		if( isset($geo->address->country_code) && 'gb' == $geo->address->country_code ){
+			//For the UK use county not state.
+			if( isset($geo->address->county) ){
+				$cities[$venue_id] = $geo->address->county;
+				eo_update_venue_meta($venue_id, '_state', $geo->address->county);
+			}
+		}else{
+			if( isset($geo->address->state) ){
+				$cities[$venue_id] = $geo->address->state;
+				eo_update_venue_meta($venue_id, '_state', $geo->address->state);
+			}
+		}
+	}	
+
+	wp_safe_redirect(admin_url('edit.php?post_type=event&page=venues'));
 }
-add_filter('eventorganiser_admin_pointers-event','eventorganiser_occurrencepicker_pointer');
+add_action('admin_post_eo-autofillcity','_eventorganiser_autofill_city');
  ?>

@@ -42,6 +42,7 @@ function eventorganiser_create_event_taxonomies() {
 		'hierarchical' => false,
 		'labels' => $venue_labels,
 		'public'=> true,
+		'show_in_nav_menus'=>false,
 		'show_ui' => false,//Use custom UI
 		'update_count_callback' => '_update_post_term_count',
 		'query_var' => true,
@@ -159,6 +160,11 @@ if( !eventorganiser_get_option('prettyurl') ){
 	$event_slug = trim(eventorganiser_get_option('url_event','events/event'), "/");
 	$events_slug = trim(eventorganiser_get_option('url_events','events/event'), "/");
 	$event_rewrite = array( 'slug' => $event_slug, 'with_front' => false,'feeds'=> true,'pages'=> true );
+
+	/* Workaround for http://core.trac.wordpress.org/ticket/19871 */
+	global $wp_rewrite;  
+	$wp_rewrite->add_rewrite_tag('%event_ondate%','([0-9]{4}(?:/[0-9]{2}(?:/[0-9]{2})?)?)','post_type=event&ondate='); 
+	add_permastruct('event_archive', $events_slug.'/on/%event_ondate%');
 }
 
 $args = array(
@@ -608,7 +614,7 @@ function eventorganiser_tax_meta_form($colour){
 			<p><?php _e('Assign the category a colour.','eventorganiser')?></p>
 		</td>
 	<script>
-var farbtastic;(function($){var pickColor=function(a){farbtastic.setColor(a);$('.colour-input').val(a);$('a.color').css('background-color',a)};$(document).ready(function(){farbtastic=$.farbtastic('#colorpicker',pickColor);pickColor($('.colour-input').val());$('.color').click(function(e){e.preventDefault();console.log($('#colorpicker').is(":visible"));if($('#colorpicker').is(":visible")){$('#colorpicker').hide()}else{$('#colorpicker').show()}});$('.colour-input').keyup(function(){var a=$('.colour-input').val(),b=a;a=a.replace(/[^a-fA-F0-9]/,'');if('#'+a!==b)$('.colour-input').val(a);if(a.length===3||a.length===6)pickColor('#'+a)});$(document).mousedown(function(){$('#colorpicker').hide()})})})(jQuery);
+var farbtastic;(function($){var pickColor=function(a){farbtastic.setColor(a);$('.colour-input').val(a);$('a.color').css('background-color',a)};$(document).ready(function(){farbtastic=$.farbtastic('#colorpicker',pickColor);pickColor($('.colour-input').val());$('.color').click(function(e){e.preventDefault();if($('#colorpicker').is(":visible")){$('#colorpicker').hide()}else{$('#colorpicker').show()}});$('.colour-input').keyup(function(){var a=$('.colour-input').val(),b=a;a=a.replace(/[^a-fA-F0-9]/,'');if('#'+a!==b)$('.colour-input').val(a);if(a.length===3||a.length===6)pickColor('#'+a)});$(document).mousedown(function(){$('#colorpicker').hide()})})})(jQuery);
 	</script>	
 <?php
 }
@@ -758,7 +764,6 @@ function eventorganiser_update_venue_meta_cache( $terms, $tax){
           	$term_ids = wp_list_pluck($terms,'term_id');
 
    		update_meta_cache('eo_venue',$term_ids);
-		$fields = array('venue_address','venue_postal','venue_country','venue_lng','venue_lat','venue_description');
 
 		//Backwards compatible. Depreciated - use the functions, not properties.
 		foreach ($terms as $term){
@@ -768,9 +773,8 @@ function eventorganiser_update_venue_meta_cache( $terms, $tax){
 
 			if( !isset($term->venue_address) ){
 				$address = eo_get_venue_address($term_id);
-				$term->venue_address =  isset($address['address']) ? $address['address'] : '';
-				$term->venue_postal =  isset($address['postcode']) ? $address['postcode'] : '';
-				$term->venue_country =  isset($address['country']) ? $address['country'] : '';
+				foreach( $address as $key => $value )
+					$term->{'venue_'.$key} = $value;
 			}
 
 			if( !isset($term->venue_lat) || !isset($term->venue_lng) ){
@@ -778,9 +782,6 @@ function eventorganiser_update_venue_meta_cache( $terms, $tax){
 				$term->venue_lng =  number_format(floatval(eo_get_venue_lng($term_id)), 6);
 			}
 
-			if( !isset($term->venue_description) ){
-				$term->venue_description = eo_get_venue_description($term_id);
-			}
 		}
 		
 		if( $single ) return $terms[0];
@@ -793,7 +794,7 @@ add_filter('get_event-venue','eventorganiser_update_venue_meta_cache',10,2);
 
 
 /**
- * Allows event-venue terms to be sorted by address, country, or postcode (on venue admin table)
+ * Allows event-venue terms to be sorted by address, city, state, country, or postcode (on venue admin table)
  * Hooked onto terms_clauses
  *
  * @ignore
@@ -806,15 +807,12 @@ function eventorganiser_join_venue_meta($pieces,$taxonomies,$args){
 	if( ! in_array('event-venue',$taxonomies) )
 		return $pieces;
 
-	switch($args['orderby']):
-		case 'address':
-		case 'country':
-		case 'postcode':
-			$meta_key ='_'.$args['orderby'];
-			break;
-		default:
-			$meta_key = false;
-	endswitch;
+	/* Order by */
+	$address_keys = array_keys(_eventorganiser_get_venue_address_fields());
+	if( in_array('_'.$args['orderby'], $address_keys) )
+		$meta_key ='_'.$args['orderby'];
+	else
+		$meta_key = false;
 
 	if(false === $meta_key)
 		return $pieces;

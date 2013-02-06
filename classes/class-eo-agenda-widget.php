@@ -7,7 +7,8 @@ class EO_Events_Agenda_Widget extends WP_Widget{
 		'title'=> '',
 		'mode'=> 'day',
 		'group_format'=>'l, jS F',
-		'item_format'=>'g:i a'
+		'item_format'=>'g:i a',
+		'add_to_google' => 1,
 		);
 
 	static $agendas=array();
@@ -41,6 +42,10 @@ class EO_Events_Agenda_Widget extends WP_Widget{
 		<label for="<?php echo $this->get_field_id('item_format'); ?>"><?php _e('Event date/time format', 'eventorganiser'); ?>: </label>
 		<input id="<?php echo $this->get_field_id('item_format'); ?>" name="<?php echo $this->get_field_name('item_format'); ?>" type="text" value="<?php echo esc_attr($instance['item_format']);?>" />
 	</p>
+	<p>
+		<label for="<?php echo $this->get_field_id('add_to_google'); ?>"><?php _e('Include \'Add To Google\' link','eventorganiser'); ?>: </label>
+		<input id="<?php echo $this->get_field_id('add_to_google'); ?>" name="<?php echo $this->get_field_name('add_to_google'); ?>" type="checkbox" value="1" <?php checked($instance['add_to_google'],1);?>" />
+	</p>
 
   <?php
   }
@@ -53,6 +58,7 @@ class EO_Events_Agenda_Widget extends WP_Widget{
 	$validated['mode'] = sanitize_text_field( $new_instance['mode'] );
 	$validated['group_format'] = sanitize_text_field( $new_instance['group_format'] );
 	$validated['item_format'] = sanitize_text_field( $new_instance['item_format'] );
+	$validated['add_to_google'] = intval( $new_instance['add_to_google']);
 	return $validated;
     }
 
@@ -70,12 +76,17 @@ class EO_Events_Agenda_Widget extends WP_Widget{
 		'id'=>esc_attr($args['widget_id']),
 		'number'=>$this->number,
 		'mode'=> isset($instance['mode']) ? $instance['mode'] : 'day',
+		'add_to_google'=>$instance['add_to_google']
 	);
 
 	//Echo widget
     	echo $before_widget;
-    	if ( $instance['title'] )
-   		echo $before_title.esc_html($instance['title']).$after_title;
+
+	$widget_title = apply_filters('widget_title', $instance['title'], $instance, $this->id_base);
+
+    	if ( $widget_title )
+   		echo $before_title.esc_html($widget_title).$after_title;
+
 	echo "<div style='width:100%' id='{$id}' class='eo-agenda-widget'>";
 ?>
 	<div class='agenda-nav'>

@@ -5,11 +5,14 @@
 */
 
 /**
-* Returns the id of the venue of an event.
-* Can be used inside the loop to output the 
-* venue id of the current event.
-* @since 1.0.0
+* Returns the ID of the venue of an event.
 *
+* Can be used inside the loop to output the 
+* venue id of the current event by not passing an ID.
+*
+* Otherwise it returns the venue ID of the passed event ID.
+*
+* @since 1.0.0
 * @param int $post_id The event (post) ID. Uses current event if empty.
 * @return int The corresponding venue (event-venue term) ID
  */
@@ -100,10 +103,18 @@ function eo_get_venue_id_by_slugorid($venue_slug_or_id=''){
 /**
  * Get all venue data from database by venue field and data. This acts as a simple wrapper for  {@see `get_term_by()`}
  *
- * Warning: $value is not escaped for 'name' $field. You must do it yourself, if required.
+ * Warning: `$value` is not escaped for 'name' `$field`. You must do it yourself, if required.
  * 
- * If $value does not exist, the return value will be false. If $taxonomy exists
- * and $field and $value combinations exist, the Term will be returned.
+ * If `$value` does not exist for that `$field`, the return value will be false other the term will be returned.
+ *
+ * ###Example
+ * Get the venue ID by slug (A better way is to use {@see `eo_get_venue_id_by_slugorid()`}
+ *
+ *     $venue = eo_get_venue_by('slug','my-venue-slug'); 
+ *     if( $venue )
+ *          $venue_id = (int) $venue->term_id;
+ *
+ *
  * @uses get_term_by()
  * @since 1.6
  *
@@ -304,7 +315,14 @@ function eo_venue_link($venue_slug_or_id=''){
 
 /**
 * Returns an array with address details of the event's venue.
-* The keys consist of 'address', 'postcode' and 'country'
+* The keys consist of
+*
+* * 'address'
+* * 'city'
+* * 'state' - the state/province/county of the venue
+* * 'postcode'
+* * 'country'
+*
 * If used with any arguments uses the venue of the current event.
  * @since 1.0.0
 *
@@ -314,16 +332,17 @@ function eo_venue_link($venue_slug_or_id=''){
 function eo_get_venue_address($venue_slug_or_id=''){
 	$address=array();	
 	$venue_id =  eo_get_venue_id_by_slugorid($venue_slug_or_id);
-	$address['address'] = eo_get_venue_meta($venue_id,'_address');
-	$address['postcode'] = eo_get_venue_meta($venue_id,'_postcode');
-	$address['country'] = eo_get_venue_meta($venue_id,'_country');
-
+	$address_keys = array_keys(_eventorganiser_get_venue_address_fields());
+	foreach( $address_keys as $meta_key ){
+		$key = trim($meta_key,'_');
+		$address[$key] = eo_get_venue_meta($venue_id,$meta_key);
+	}
 	return $address;
 }
 
 
 /**
- * Retrieve array of venues. Acts as a wrapper for {@link http://codex.wordpress.org/Function_Reference/get_terms `get_terms()`} , except `hide_empty` defaults to false.
+ * Retrieve array of venues. Acts as a wrapper for {@link http://codex.wordpress.org/Function_Reference/get_terms get_terms()}, except hide_empty defaults to false.
  *
  * The list of arguments that `$args` can contain, which will overwrite the defaults:
  *
@@ -344,8 +363,23 @@ function eo_get_venue_address($venue_slug_or_id=''){
  * *  **slug** - Returns terms whose "slug" matches this value. Default is empty string.
  * * **search** - Returned terms' names will contain the value of 'search',
  * * **case-insensitive**. Default is an empty string.
+ *
+ * ###Example
+ *
+ *     $venues = eo_get_venues(); 
+ *     
+ *     if( $venues ){
+ *          echo '<ul>'; 
+ *          foreach($venues as $venue): 
+ *		  $venue_id = (int) $venue->term_id;
+ *               printf('<li> <a href="%s">%s</a>', eo_get_venue_link($venue_id), esc_html($venue->name));
+ *          endforeach; 
+ *          echo '</ul>';
+ *     }
+ *
  * @uses get_terms()
  * @link https://gist.github.com/3902494 Gist for creating an archive page of all the venues
+ * @link http://codex.wordpress.org/Function_Reference/get_terms get_terms()
  * @since 1.0.0
  *
  * @param string|array $args The values of what to search for when returning venues
@@ -372,9 +406,17 @@ function eo_get_venues($args=array()){
  *
  * Calls {@see `wp_insert_term()`} to update the taxonomy term
  * Updates venue meta data to database (for 'core' meta keys)
- * 
- * The $args is an array - the same as that accepted by `wp_update_term()`
- * The $args array can also accept the following keys: description, address, postcode, country, latitude, longtitude
+ * The $args is an array - the same as that accepted by {@link http://codex.wordpress.org/Function_Reference/wp_update_term wp_update_term()}
+ * The $args array can also accept the following keys: 
+ *
+ * * description
+ * * address
+ * * city
+ * * state
+ * * postcode
+ * * country
+ * * latitude
+ * * longtitude
  *
  * @since 1.4.0
  *
@@ -388,7 +430,7 @@ function eo_get_venues($args=array()){
 	function eo_update_venue($venue_id, $args=array()){
 
 		$term_args = array_intersect_key($args, array('name'=>'','term_id'=>'','term_group'=>'','term_taxonomy_id'=>'','alias_of'=>'','parent'=>0,'slug'=>'','count'=>''));
-		$meta_args = array_intersect_key($args, array('description'=>'','address'=>'','postcode'=>'','country'=>'','latitude'=>'','longtitude'=>''));
+		$meta_args = array_intersect_key($args, array('description'=>'','address'=>'','postcode'=>'','city'=>'','state'=>'','country'=>'','latitude'=>'','longtitude'=>''));
 		$venue_id = (int) $venue_id;
 
 
@@ -429,15 +471,25 @@ function eo_get_venues($args=array()){
  *
  * Calls {@see `wp_insert_term()`} to create the taxonomy term
  * Adds venue meta data to database (for 'core' meta keys)
- * 
- * The $args is an array - the same as that accepted by `wp_insert_term()`
- * The $args array can also accept the following keys: description, address, postcode, country, latitude, longtitude
+ *
+ * The $args is an array - the same as that accepted by {@link http://codex.wordpress.org/Function_Reference/wp_update_term wp_update_term()}
+ * The $args array can also accept the following keys: 
+ *
+ * * description
+ * * address
+ * * city
+ * * state
+ * * postcode
+ * * country
+ * * latitude
+ * * longtitude
  *
  * @since 1.4.0
  *
  * @uses `wp_insert_term()` to create venue (taxonomy) term
  * @uses do_action() Calls 'eventorganiser_insert_venue' hook with the venue id
  * @uses do_action() Calls 'eventorganiser_save_venue' hook with the venue id
+ * @link http://codex.wordpress.org/Function_Reference/wp_insert_term wp_insert_term()
  *
  * @param string $name the venue to insert
  * @param array $args Array as accepted by wp_update_term and including the 'core' metadata
@@ -445,7 +497,7 @@ function eo_get_venues($args=array()){
  */
 	function eo_insert_venue($name, $args=array()){
 		$term_args = array_intersect_key($args, array('name'=>'','term_id'=>'','term_group'=>'','term_taxonomy_id'=>'','alias_of'=>'','parent'=>0,'slug'=>'','count'=>''));
-		$meta_args = array_intersect_key($args, array('description'=>'','address'=>'','postcode'=>'','country'=>'','latitude'=>'','longtitude'=>''));
+		$meta_args = array_intersect_key($args, array('description'=>'','address'=>'','postcode'=>'','city'=>'','state'=>'','country'=>'','latitude'=>'','longtitude'=>''));
 	
 		$resp = wp_insert_term($name,'event-venue',$term_args);
 
@@ -491,7 +543,7 @@ function eo_get_venues($args=array()){
  * @uses wp_delete_term to delete venue (taxonomy) term
  * @uses do_action() Calls 'eventorganiser_delete_venue' hook with the venue id
  *
- * @param int the Term ID of the venue to update
+ * @param int $venue_id the Term ID of the venue to update
  * @return bool|WP_Error false or error on failure. True after sucessfully deleting the venue and its meta data.
  */
 	function eo_delete_venue($venue_id){
@@ -516,11 +568,10 @@ function eo_get_venues($args=array()){
  * Accepts an arguments array corresponding to the attributes supported by the shortcode.
  * @since 1.6
  *
- * @uses EventOrganiser_Shortcodes::get_venue_map()
  * @link http://www.stephenharris.info/2012/event-organiser-1-6-whats-new/ Examples of using eo_get_venue_map()
  *
 * @param mixed $venue_slug_or_id The venue ID as an integer. Or Slug as string. Uses venue of current event if empty.
-* @return string The markup of the map
+* @return string The markup of the map. False is no venue found.
  */
 function eo_get_venue_map($venue_slug_or_id='', $args=array()){
 
@@ -563,6 +614,11 @@ function eo_get_venue_map($venue_slug_or_id='', $args=array()){
 			$class = "eo-venue-map googlemap";
 			$style = "style='height:".$height.";width:".$width.";' ";
 		}
+
+		$venue_ids = array_filter($venue_ids);
+
+		if( empty($venue_ids) )
+			return false;
 		
 		//Set up venue locations for map
 		foreach( $venue_ids as $venue_id ){
@@ -596,7 +652,7 @@ function eo_get_venue_map($venue_slug_or_id='', $args=array()){
  * This function returns the values of the venue meta with the specified key from the specified venue. (Specified by the venue ID - the taxonomy term ID).
  *
  * @since 1.5.0
- * @link http://www.harriswebsolutions.co.uk/event-organiser/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
+ * @link http://wp-event-organiser.com/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
  *
  * @param int $venue_id Venue (term) ID.
  * @param string $key Optional. The meta key to retrieve. By default, returns data for all keys.
@@ -612,8 +668,21 @@ function eo_get_venue_meta($venue_id, $key, $single=true){
 /**
  * Add meta data field to a venue
  *
+ * You should avoid the following 'core' keys:
+ *
+ * * _description
+ * * _address
+ * * _city
+ * * _state
+ * * _postcode
+ * * _country
+ * * _latitude
+ * * _longtitude
+ *
+ * It is **strongly** recommended that you prefix your keys with and underscore.
+ *
  * @since 1.5.0
- * @link http://www.harriswebsolutions.co.uk/event-organiser/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
+ * @link http://wp-event-organiser.com/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
  *
  * @param int $venue_id Venue (term) ID.
  * @param string $key Metadata name.
@@ -633,8 +702,21 @@ function eo_add_venue_meta($venue_id, $key, $value, $unique = false ){
  *
  * If the meta field for the venue does not exist, it will be added.
  *
+ * You should avoid the following 'core' keys:
+ *
+ * * _description
+ * * _address
+ * * _city
+ * * _state
+ * * _postcode
+ * * _country
+ * * _latitude
+ * * _longtitude
+ *
+ * It is **strongly** recommended that you prefix your keys with and underscore.
+ *
  * @since 1.5.0
- * @link http://www.harriswebsolutions.co.uk/event-organiser/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
+ * @link http://wp-event-organiser.com/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
  *
  * @param int $venue_id Venue (term) ID.
  * @param string $key Metadata key.
@@ -654,7 +736,7 @@ function eo_update_venue_meta($venue_id, $key, $value, $prev_value=''){
  * allows removing all metadata matching key, if needed.
  *
  * @since 1.5.0
- * @link http://www.harriswebsolutions.co.uk/event-organiser/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
+ * @link http://wp-event-organiser.com/documentation/developers/venue-meta-data-and-metaboxes/ How to create custom fields for venues
  *
  * @param int $venue_id Venue (term) ID.
  * @param string $key Metadata name.
@@ -675,30 +757,46 @@ function eo_delete_venue_meta($venue_id, $key, $value = '', $delete_all = false 
  * @param mixed The meta data being validated.
  * @return mixed The validated value. False if the key is not recognised.
  */
-	function eventorganiser_sanitize_meta($key,$value){
-		switch($key):
-			case '_address':
-			case '_postcode':
-			case '_country':
+function eventorganiser_sanitize_meta($key,$value){
+
+	switch($key):
+		case '_description':
+			$value = wp_filter_post_kses($value);
+			break;
+		case '_lat':
+		case '_lng':
+			//Cast as float and then string: make sure string uses . not , for decimal point
+			$value = floatval($value);
+			$value = number_format($value, 6);
+			break;
+		default:
+			$address_keys = _eventorganiser_get_venue_address_fields();
+			if( isset($address_keys[$key]) )
 				$value = sanitize_text_field($value);
-				break;
-
-			case '_description':
-				$value = wp_filter_post_kses($value);
-				break;
-
-			case '_lat':
-			case '_lng':
-				//Cast as float and then string: make sure string uses . not , for decimal point
-				$value = floatval($value);
-				$value = number_format($value, 6);
-				break;
-			default:
+			else
 				$value = false;
-		endswitch;
+	endswitch;
 
-		return $value;
-	}
+	return $value;
+}
+
+/**
+ *@ignore
+ *@access private
+ */
+function _eventorganiser_get_venue_address_fields(){
+	//Keys *must* be prefixed by a '_'.
+	$address_fields = array(
+		'_address'=>  __('Address','eventorganiser'),
+		'_city'=>  __('City','eventorganiser'),
+		'_state'=>  __('State / Province','eventorganiser'),
+		'_postcode'=>  __('Post Code','eventorganiser'),
+		'_state'=>  __('State / Province','eventorganiser'),
+		'_country'=>  __('Country','eventorganiser'),
+	);
+
+	return apply_filters('eventorganiser_venue_address_fields', $address_fields);
+}
 
 
 /**

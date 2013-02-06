@@ -36,21 +36,21 @@ class EO_Venue_List_Table extends WP_List_Table {
      */
     function column_default($item, $column_name){
 		$term_id = (int) $item->term_id;
+		$address = eo_get_venue_address($term_id);
+		
 		 switch($column_name){
-			case 'venue_address':
-				$address = eo_get_venue_address($term_id);
-				return esc_html($address['address']);
-			case 'venue_postal':
-				$address = eo_get_venue_address($term_id);
-				return esc_html($address['postcode']);
-			case 'venue_country':
-				$address = eo_get_venue_address($term_id);
-				return esc_html($address['country']);
 			case 'venue_slug':
 				return esc_html($item->slug);
 			case 'posts':
 				return intval($item->count);
 			default:
+				$address_keys = array_keys($address);
+				foreach( $address_keys as $key ){
+					if( 'venue_'.$key == $column_name ){
+						return esc_html($address[$key]);
+					}
+				}
+				//TODO Hook for extra columns?
 				return print_r($item,true); //Show the whole array for troubleshooting purposes
 		}
     }
@@ -104,12 +104,14 @@ class EO_Venue_List_Table extends WP_List_Table {
      */
     function get_sortable_columns() {
         $sortable_columns = array(
-            'name'     => array('name',true),     //true means its sorted by default
-            'venue_address'     => array('address',false),     //true means its sorted by default
-            'venue_postal'     => array('postcode',false),     //true means its sorted by default
-            'venue_country'     => array('country',false),     //true means its sorted by default
-            'venue_slug'     => array('slug',false),     //true means its sorted by default
-            'posts'     => array('count',false),     //true means its sorted by default
+            'name'		=> array('name',true),   //true means its sorted by default  
+            'venue_address'     => array('address',false),  
+            'venue_city'	=> array('city',false), 
+            'venue_state'	=> array('state',false),
+            'venue_postcode'	=> array('postcode',false),
+            'venue_country'	=> array('country',false),
+            'venue_slug'	=> array('slug',false),
+            'posts'		=> array('count',false),
         );
         return $sortable_columns;
     }

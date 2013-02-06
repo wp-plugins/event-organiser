@@ -27,6 +27,7 @@ if (!Array.prototype.indexOf)
   };
 }
 
+    var eo_venue_obj;
     if ($('#eo_occurrence_includes').length > 0) {
         eo_include_dates = $('#eo_occurrence_includes').val().split(",");
         eo_exclude_dates = $('#eo_occurrence_excludes').val().split(",");
@@ -42,10 +43,10 @@ if (!Array.prototype.indexOf)
         //Venue picker - combobox
     $.widget("ui.combobox", {
         _create: function () {
-            var input, b = this,
-                c = this.element.hide(),
-                d = c.children(":selected"),
-                e = d.val() ? d.text() : "";
+            var input;
+            var c = this.element.hide();
+            var d = c.children(":selected");
+            var e = d.val() ? d.text() : "";
             var wrapper  = $("<span>").addClass("ui-combobox eo-venue-input").insertAfter(c);
              input = $("<input>").appendTo(wrapper).val(e).addClass("ui-combobox-input").autocomplete({
                 delay: 0,
@@ -53,11 +54,11 @@ if (!Array.prototype.indexOf)
                 source: function (a, b) {
                     $.getJSON(EO_Ajax_Event.ajaxurl + "?callback=?&action=eo-search-venue", a, function (a) {
 			var venues = $.map(a, function (a) {
-                                			a.label = a.name
+                                			a.label = a.name;
                             				return a;
                         				});
                         b(venues);
-                    })
+                    });
                 },
                 select: function (a, b) {
                     if ($("tr.venue_row").length > 0) {
@@ -69,24 +70,26 @@ if (!Array.prototype.indexOf)
 				$("#eventorganiser_event_detail tr.eo-add-new-venue").hide();
                         }
                         eo_initialize_map(b.item.venue_lat, b.item.venue_lng)
+			$("#eo_venue_Lat").val(b.item.venue_lat);
+			$("#eo_venue_Lng").val(b.item.venue_lng);
                     }
                     $("#venue_select").removeAttr("selected");
-                    $("#venue_select").val(b.item.term_id)
+                    $("#venue_select").val(b.item.term_id);
                 }
             }).addClass("ui-widget-content ui-corner-left");
             input.data("autocomplete")._renderItem = function (a, b) {
                 if (b.term_id == 0 ) {
-                    return $("<li></li>").data("item.autocomplete", b).append("<a>" + b.label + "</a>").appendTo(a)
+                    return $("<li></li>").data("item.autocomplete", b).append("<a>" + b.label + "</a>").appendTo(a);
                 }
 		//Clean address
-		var address_array = [b.venue_address, b.venue_postal, b.venue_country]
+		var address_array = [b.venue_address, b.venue_city, b.venue_state,b.venue_postcode,b.venue_country];
 		address_array = $.grep(address_array,function(n){
 		    return(n);
 		});
 
                 return $("<li></li>").data("item.autocomplete", b)
 							.append("<a>" + b.label + "</br> <span style='font-size: 0.8em'><em>" +address_array.join(', ')+ "</span></em></a>")
-							.appendTo(a)
+							.appendTo(a);
             };
 
 	var button_wrappers = $("<span>").addClass("eo-venue-combobox-buttons").appendTo(wrapper);
@@ -102,8 +105,8 @@ if (!Array.prototype.indexOf)
                 }
                 $(this).blur();
                 input.autocomplete("search", "");
-                input.focus()
-            })
+                input.focus();
+            });
 
 		if( 'event' == pagenow ){
 			//Only add this on event edit page - i.e. not on calendar page.
@@ -115,6 +118,13 @@ if (!Array.prototype.indexOf)
             		}).removeClass("ui-corner-all").addClass("ui-corner-right add-new-venue ui-combobox-button").click(function () {
 				$("#eventorganiser_event_detail tr.eo-add-new-venue").show();			
 				$("tr.venue_row").show();
+				//Store existing venue details in case the user cancels creating a new on
+				eo_venue_obj={
+					id: $("#venue_select").val(),
+					label: $(".eo-venue-input input").val(),
+					lat: $("#eo_venue_Lat").val(),
+					lng: $("#eo_venue_Lng").val()
+				};
 				$("#venue_select").removeAttr("selected").val(0);
 				$('.eo-venue-combobox-select').hide();
 				$('.eo-venue-input input').val('');
@@ -128,20 +138,26 @@ if (!Array.prototype.indexOf)
 					map.setZoom(1);
 				}
 				$(this).blur();
-            		})
+            		});
 		}	
         }
     });
-    $("#venue_select").combobox()
-})
+    $("#venue_select").combobox();
+});
 
 
 $('.eo-add-new-venue-cancel').click(function(e){
 	e.preventDefault();
 	$('.eo-venue-combobox-select').show();
 	$('.eo-add-new-venue input').val('');
+
+	//Restore old venue details
+	eo_initialize_map(eo_venue_obj.lat,eo_venue_obj.lng);
+	$("#venue_select").val(eo_venue_obj.id);
+	$(".eo-venue-input input").val(eo_venue_obj.label);
+
 	$("#eventorganiser_event_detail tr.eo-add-new-venue").hide();	
-	$("#eventorganiser_event_detail tr.venue_row ").hide();
+	//$("#eventorganiser_event_detail tr.venue_row ").hide();
 });
 
 
@@ -161,14 +177,14 @@ $('.eo-add-new-venue-cancel').click(function(e){
             $(".reocurrence_row").hide();
             $("#dayofweekrepeat").show();
             $("#dayofmonthrepeat").show();
-            $(".reocurrence_row").attr("disabled", true);
+            $(".reocurrence_row :input").attr("disabled", true);
             break;
         case "weekly":
             $(".reocurrence_row :input").attr("disabled", false);
             if ($("#HWSEvent_freq").val() > 1) {
-                $("#recpan").text(locale.weeks)
+                $("#recpan").text(locale.weeks);
                 } else {
-                $("#recpan").text(locale.week)
+                $("#recpan").text(locale.week);
                 }
             $(".reocurrence_row").fadeIn(speed);
             $("#dayofweekrepeat").fadeIn(speed);
@@ -179,9 +195,9 @@ $('.eo-add-new-venue-cancel').click(function(e){
         case "monthly":
             $(".reocurrence_row :input").attr("disabled", false);
             if ($("#HWSEvent_freq").val() > 1) {
-                $("#recpan").text(locale.months)
+                $("#recpan").text(locale.months);
                 } else {
-                $("#recpan").text(locale.month)
+                $("#recpan").text(locale.month);
                 }
             $(".reocurrence_row").fadeIn(speed);
             $("#dayofmonthrepeat").fadeIn(speed);
@@ -193,9 +209,9 @@ $('.eo-add-new-venue-cancel').click(function(e){
             $(".reocurrence_row :input").attr("disabled", false);
             $(".reocurrence_row").fadeIn(speed);
             if ($("#HWSEvent_freq").val() > 1) {
-                $("#recpan").text(locale.days)
+                $("#recpan").text(locale.days);
                 } else {
-                $("#recpan").text(locale.day)
+                $("#recpan").text(locale.day);
                 }
             $("#dayofweekrepeat").hide();
             $("#dayofweekrepeat :input").attr("disabled", true);
@@ -206,20 +222,20 @@ $('.eo-add-new-venue-cancel').click(function(e){
             $(".reocurrence_row :input").attr("disabled", false);
             $(".reocurrence_row").fadeIn(speed);
             if ($("#HWSEvent_freq").val() > 1) {
-                $("#recpan").text(locale.years)
+                $("#recpan").text(locale.years);
                 } else {
-                $("#recpan").text(locale.year)
+                $("#recpan").text(locale.year);
                 }
             $("#dayofweekrepeat").hide();
             $("#dayofweekrepeat :input").attr("disabled", true);
             $("#dayofmonthrepeat").hide();
             $("#dayofmonthrepeat :radio").attr("disabled", true);
-            break
+            break;
         }
         if ($("#venue_select").val() === null) {
-            $("tr.venue_row").hide()
+            $("tr.venue_row").hide();
             }
-        eo_produce_summary()
+        eo_produce_summary();
         }
 
     function eo_produce_summary() {
@@ -235,76 +251,76 @@ $('.eo-add-new-venue-cancel').click(function(e){
             dayNamesMin: EO_Ajax_Event.locale.dayAbbrev,
             monthNames: EO_Ajax_Event.locale.monthNames
         };
-        var reoccurrence = $("#HWSEventInput_Req :selected").text();
+
         var frequency = parseInt($("#HWSEvent_freq").val());
         var summary = locale.summary + " ";
         switch ($("#HWSEventInput_Req").val()) {
         case "custom":
         case "daily":
             if (frequency > 1) {
-                summary += sprintf(locale.dayPlural, frequency)
+                summary += sprintf(locale.dayPlural, frequency);
                 } else {
-                summary += locale.daySingle
+                summary += locale.daySingle;
             }
             break;
         case "weekly":
             if (frequency > 1) {
-                summary += sprintf(locale.weekPlural, frequency)
+                summary += sprintf(locale.weekPlural, frequency);
                 } else {
-                summary += locale.weekSingle
+                summary += locale.weekSingle;
             }
             var selected = $("#dayofweekrepeat :checkbox:checked");
             if (selected.length == 0) {
                 var day = a.getDay();
-                $("#dayofweekrepeat :checkbox[value='" + c[day] + "']").attr("checked", true)
+                $("#dayofweekrepeat :checkbox[value='" + c[day] + "']").attr("checked", true);
                 }
             selected = $("#dayofweekrepeat :checkbox:checked");
             selected.each(function(a) {
                 if (a == 0)
                     summary = summary + " " + b[c.indexOf($(this).val())];
                 if (a > 0)
-                    summary = summary + ", " + b[c.indexOf($(this).val())]
+                    summary = summary + ", " + b[c.indexOf($(this).val())];
                 });
             break;
         case "monthly":
             if (frequency > 1) {
-                summary += sprintf(locale.monthPlural, frequency)
+                summary += sprintf(locale.monthPlural, frequency);
                 } else {
-                summary += locale.monthSingle
+                summary += locale.monthSingle;
             }
             if ($("#dayofmonthrepeat :radio:checked").val() == "BYMONTHDAY=") {
-                summary = summary + " " + a.getDate() + eo_date_suffix(a)
+                summary = summary + " " + a.getDate() + eo_date_suffix(a);
                 } else {
                 day = a.getDay() % 7;
                 var n = parseInt(Math.floor((a.getDate() - 1) / 7));
                 var occurrence = locale.occurrence;
-                summary = summary + " " + occurrence[n] + " " + b[day]
+                summary = summary + " " + occurrence[n] + " " + b[day];
                 }
             break;
         case "yearly":
             if (frequency > 1) {
-                summary += sprintf(locale.yearPlural, frequency)
+                summary += sprintf(locale.yearPlural, frequency);
                 } else {
-                summary += locale.yearSingle
+                summary += locale.yearSingle;
             }
             summary = summary + " " + $.datepicker.formatDate("MM d", a, options) + eo_date_suffix(a);
-            break
+            break;
         }
         var d = $("#recend").datepicker("getDate");
         if (d != null) {
-            summary = summary + " " + locale.until + " " + $.datepicker.formatDate("MM d'" + eo_date_suffix(d) + "' yy", d, options)
+            summary = summary + " " + locale.until + " " + $.datepicker.formatDate("MM d'" + eo_date_suffix(d) + "' yy", d, options);
             }
-        $("#event_summary").html(summary)
+        $("#event_summary").html(summary);
         }
 
     function eo_date_suffix(date) {
         var suffix = ["th", "st", "nd", "rd"];
         if (3 < date.getDate() && date.getDate() < 20) {
-            var s = 0
+            var s = 0;
         } else {
-            var s = Math.min(date.getDate() % 10, 4) % 4
+            var s = Math.min(date.getDate() % 10, 4) % 4;
         }
-        return suffix[s]
+        return suffix[s];
         };
 
     if ($("#eventorganiser_detail #from_date, #eventorganiser_detail #to_date").length > 0) {
@@ -322,7 +338,7 @@ $('.eo-add-new-venue-cancel').click(function(e){
                 date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
                 dates.not(this).datepicker("option", option, date);
                 if (this.id == "from_date") {
-                    $("#recend").datepicker("option", "minDate", date)
+                    $("#recend").datepicker("option", "minDate", date);
                     }
                 eo_update_occurrencepicker_rules();
                 eo_update_event_form()
@@ -342,18 +358,18 @@ $('.eo-add-new-venue-cancel').click(function(e){
             minuteText: EO_Ajax_Event.locale.minute
         });
         $("#HWSEvent_rec").click(function() {
-            eo_update_event_form()
+            eo_update_event_form();
             });
         $(".reoccurence .event-date :input, .onetime .event-date :input").not('.eo_time').change(function(o) {
             eo_update_event_form();
             if ($(this).attr('id') != 'eo_allday') {
-                eo_update_occurrencepicker_rules()
+                eo_update_occurrencepicker_rules();
                 };
         });
         eo_update_event_form();
         var bool = !$(this).prop("checked");
         $(".reoccurence .event-date :input").attr('disabled', bool);
-        $(".reoccurence .event-date :input").toggleClass('ui-state-disabled', bool)
+        $(".reoccurence .event-date :input").toggleClass('ui-state-disabled', bool);
         }
 
     //When rule changes, wipe include/exclude dates clean
@@ -361,8 +377,8 @@ $('.eo-add-new-venue-cancel').click(function(e){
         eo_exclude_dates = new Array();
         eo_include_dates = new Array();
         eo_update_inc_ex_Input();
-        eo_generate_dates_by_rule(eo_viewing_month[0], eo_viewing_month[1], {})
-            dp.datepicker("refresh");
+        eo_generate_dates_by_rule(eo_viewing_month[0], eo_viewing_month[1], {});
+        dp.datepicker("refresh");
     };
 
     //Show/hide calendar
@@ -370,6 +386,11 @@ $('.eo-add-new-venue-cancel').click(function(e){
         e.preventDefault();
         e.stopPropagation();
         dp.toggle();
+        if( dp.is(":visible") ){
+        	$('.eo_occurrence_toogle').val(EO_Ajax_Event.locale.hideDates);
+        }else{
+        	$('.eo_occurrence_toogle').val(EO_Ajax_Event.locale.showDates);
+        }
     });
 
     //Fires before each date. Decides what classes to add
@@ -559,7 +580,7 @@ $('.eo-add-new-venue-cancel').click(function(e){
                 eo_removeDateFromInclude(index);
             } else {
                 //Date was eventful by rule
-                eo_addDateToExclude(date)
+                eo_addDateToExclude(date);
                 }
         } else {
             //Date is not eventful. Add date
@@ -569,7 +590,7 @@ $('.eo-add-new-venue-cancel').click(function(e){
                 eo_removeDateFromExclude(index);
             } else {
                 //Date was not an event by rule
-                eo_addDateToInclude(date)
+                eo_addDateToInclude(date);
                 }
         }
         //Update inclusion, exclusion textareas
