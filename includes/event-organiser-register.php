@@ -9,7 +9,7 @@
  */
 function eventorganiser_register_script() {
 	global $wp_locale;
-	$version = '1.7';
+	$version = '1.7.2';
 
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
 
@@ -76,7 +76,7 @@ add_action('init', 'eventorganiser_register_script');
  * @access private
  */
 function eventorganiser_register_scripts(){
-	$version = '1.7';
+	$version = '1.7.2';
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
 
 	/*  Venue scripts for venue & event edit */
@@ -159,6 +159,9 @@ function eventorganiser_add_admin_scripts( $hook ) {
 					'ajaxurl' => admin_url( 'admin-ajax.php' ),
 					'startday'=>intval(get_option('start_of_week')),
 					'format'=> eventorganiser_get_option('dateformat').'-yy',
+					'current_user_can' => array(
+						'manage_venues' => current_user_can( 'manage_venues' ),
+					),
 					'location'=>get_option('timezone_string'),
 					'locale'=>array(
 						'monthNames'=>array_values($wp_locale->month),
