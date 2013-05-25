@@ -1019,13 +1019,15 @@ function eo_get_event_fullcalendar( $args ){
 
 	$defaults = array(
 		'headerleft'=>'title', 'headercenter'=>'', 'headerright'=>'prev next today', 'defaultview'=>'month',
-		'event_category'=>'', 'event_venue'=>'', 'timeformat'=>'G:i', 'axisformat'=>get_option('time_format'), 'key'=>false,
+		'event_category'=>'', 'event_venue'=>'', 'timeformat'=>get_option('time_format'), 'axisformat'=>get_option('time_format'), 'key'=>false,
 		'tooltip'=>true, 'weekends'=>true, 'mintime'=>'0', 'maxtime'=>'24', 'alldayslot'=>true,
 		'alldaytext'=>__('All Day','eventorganiser'), 'columnformatmonth'=>'D', 'columnformatweek'=>'D n/j', 'columnformatday'=>'l n/j',
 		'titleformatmonth' => 'F Y', 'titleformatweek' => "M j[ Y]{ '&#8212;'[ M] j Y}", 'titleformatday' => 'l, M j, Y',
-		'year' => false, 'month' => false, 'date' => false,			
+		'year' => false, 'month' => false, 'date' => false,	'users_events' => false, 'event_occurrence__in' =>array(),	
 	);
-	$args = shortcode_atts( $defaults, $args );
+	
+	$args = shortcode_atts( $defaults, $args, 'eo_fullcalendar' );
+	
 	$key = $args['key'];
 	unset($args['key']);
 	
@@ -1044,6 +1046,7 @@ function eo_get_event_fullcalendar( $args ){
 	$args['month'] = ( $args['month'] ? $args['month'] - 1 : false );
 
 	EventOrganiser_Shortcodes::$calendars[] = array_merge( $args );
+	
 	EventOrganiser_Shortcodes::$add_script = true;
 	$id = count( EventOrganiser_Shortcodes::$calendars );
 
@@ -1228,4 +1231,30 @@ function eo_break_occurrence( $post_id, $event_id ){
 	return $new_event_id;
 }
 
+/**
+ * Returns a UID for an event
+ * 
+ * If the UID is not found it generates one based on event (post) ID, a timestamp, blog ID and server address.
+ * 
+ * @since 2.1
+ * @param int $post_id The event (post) ID. If ommitted 'current event' is used
+ * @return string The UID, or false if error.
+ */
+function eo_get_event_uid( $post_id = 0 ){
+	
+	$post_id = (int) ( empty( $post_id ) ? get_the_ID() : $post_id );
+	
+	if( empty( $post_id ) )
+		return false;
+	
+	$uid = get_post_meta( get_the_ID(), '_eventorganiser_uid', true );
+	
+	if( empty( $uid ) ){
+		$now = new DateTime();
+		$uid = implode( '-', array( $now->format('Ymd\THi\Z'), microtime(true), 'EO', get_the_ID(), get_current_blog_id() ) ).'@'.$_SERVER['SERVER_ADDR'];
+		add_post_meta( get_the_ID(), '_eventorganiser_uid', $uid );
+	}
+	
+	return $uid;
+}
 ?>

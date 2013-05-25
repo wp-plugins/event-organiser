@@ -473,7 +473,7 @@ function _eventorganiser_check_datetime( $datetime_string = '', $format = null )
 		else
 			$format = eventorganiser_get_option('dateformat');
 	}
-	
+
 	//Get regular expression.
 	if( $format == 'Y-m-d' ){
 		$reg_exp = "/(?P<year>\d{4})[-.\/](?P<month>\d{1,})[-.\/](?P<day>\d{1,}) (?P<hour>\d{2}):(?P<minute>\d{2})/";
@@ -798,10 +798,16 @@ function eventorganiser_textarea_field($args){
 	$html ='';
 
 	if( $args['tinymce'] ){
+		
+		ob_start();
 		wp_editor( $value, esc_attr($id) ,array(
 				'textarea_name'=>$name,
 				'media_buttons'=>false,
+				'textarea_rows' => intval($args['rows']),
 			));
+		
+		$html .= ob_get_contents();
+		ob_end_clean();
 	}else{
 		$html .= sprintf('<textarea cols="%s" rows="%d" name="%s" class="%s large-text" id="%s" %s >%s</textarea>',
 				intval($args['cols']),
@@ -907,4 +913,155 @@ function _eventorganiser_enqueue_inline_help_scripts(){
 	wp_enqueue_script( 'eo-inline-help' );
 	wp_enqueue_style( 'eventorganiser-style' );
 }
+
+function eo_color_luminance( $hex, $percent ) {
+
+	// validate hex string
+
+	$hex = preg_replace( '/[^0-9a-f]/i', '', $hex );
+	$new_hex = '#';
+
+	if ( strlen( $hex ) < 6 ) {
+		$hex = $hex[0] + $hex[0] + $hex[1] + $hex[1] + $hex[2] + $hex[2];
+	}
+
+	// convert to decimal and change luminosity
+	for ($i = 0; $i < 3; $i++) {
+		$dec = hexdec( substr( $hex, $i*2, 2 ) );
+		$dec = min( max( 0, $dec + $dec * $percent ), 255 );
+		$new_hex .= str_pad( dechex( $dec ) , 2, 0, STR_PAD_LEFT );
+	}
+
+	return $new_hex;
+}
+
+/**
+ * Whether the blog's time settings indicates it uses 12 or 24 hour time
+ * 
+ * If uses meridian (am/pm) it is 12 hour.
+ * If uses 'H' as the time format it is 24 hour.
+ * Otherwise assumed to be 12 hour.
+ */
+function eventorganiser_blog_is_24(){
+	
+	$time = get_option( 'time_format');
+	
+	//Check for meridian
+	if( preg_match( '~\b(A.)\b|([^\\\\]A)~i', $time, $matches ) ){
+		return false;
+	}
+
+	//Check for 24 hour format
+	if( preg_match( '~\b(H.)\b|([^\\\\]H)~i', $time ) ){
+		return true;
+	}
+	
+	//Assume it isn't
+	return false;
+}
+
+/**
+ * Wrapper for `wp_localize_script`. 
+ * 
+ * Allows additional arguments to added to a js variable before its printed. By contrast
+ * wp_localize_script() over-rides prevous calls to the same handle-object pair.
+ * 
+ * This allows (most) Event Organiser js-variables to live under the namespace 'eventorganiser'
+ *
+ * @since 2.1
+ * @uses eventorganiser_array_merge_recursive_distinct()
+ * @access private
+ * @param string $handle
+ * @param array $obj
+ */
+function eo_localize_script( $handle, $obj ){
+	static $eventorganiser_localise_obj = array();
+	
+	$eventorganiser_localise_obj = eo_array_merge_recursive_distinct( $eventorganiser_localise_obj, $obj );
+
+	wp_localize_script( $handle, 'eventorganiser', $eventorganiser_localise_obj );	
+}
+
+/**
+ * Recursively merge two or more arrays. 
+ * 
+ * Unlike `array_merge_recursive()` the datatype is not altered. Values override existing values. If its an array,
+ * Matching keys' values in a latter array overwrite those in the earlier arrays.
+ * 
+ * @param array1 array Initial array to merge.
+ * @param array2 array Second array to merge  
+ *  
+ * @since 2.1
+ * @see http://www.php.net/manual/en/function.array-merge-recursive.php#91049
+ * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
+ * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
+ * @author Michiel <michiel (at) synetic (dot) nl
+ * @return array the resulting array.
+ */
+function &eo_array_merge_recursive_distinct ( array $array1, array $array2 /* array 3, array 4 */  ){
+	
+	$aArrays = func_get_args();
+	$aMerged = $aArrays[0];
+	
+	for($i = 1; $i < count($aArrays); $i++){
+		if ( is_array( $aArrays[$i] ) ){
+			foreach ($aArrays[$i] as $key => $val){
+				if ( is_array( $aArrays[$i][$key] ) ){
+					if( isset( $aMerged[$key] ) && is_array( $aMerged[$key] ) ){
+						$aMerged[$key] =  eo_array_merge_recursive_distinct( $aMerged[$key], $aArrays[$i][$key] );
+					}else{
+						$aMerged[$key] = $aArrays[$i][$key];
+					}
+				}else{
+					$aMerged[$key] = $val;
+				}
+			}
+		}
+	}
+	
+	return $aMerged;
+}
+
+
+/**
+ * Add $dep (script handle) to the array of dependencies for $handle
+ * 
+ * @since 2.1
+ * @access private
+ * @see http://wordpress.stackexchange.com/questions/100709/add-a-script-as-a-dependency-to-a-registered-script
+ * @param string $handle Script handle for which you want to add a dependency
+ * @param string $dep Script handle - the dependency you wish to add
+ */
+function eventorganiser_append_dependency( $handle, $dep ){
+	global $wp_scripts;
+	
+	$script = $wp_scripts->query( $handle, 'registered');
+	if( !$script )
+		return false;
+	
+	if( !in_array( $dep, $script->deps ) ){
+		$script->deps[] = $dep;
+	}
+	
+	return true;
+}
+
+
+/**
+ * Escapes a string so it safe for use in ICAL template
+ * 
+ * Commas, semicolons and backslashes are escaped.
+ * New lines are appended with a space (why?)
+ * @since 2.1
+ * @param string $text The string to be escaped
+ * @return string The escaped string.
+ */
+function eventorganiser_escape_ical_text( $text ){
+	$text = str_replace("\\", "\\\\", $text);
+	$text = str_replace(",", "\,", $text);
+	$text = str_replace(";", "\;", $text);
+	$text = str_replace("\n", "\n ", $text);
+	return $text;
+}
+	
 ?>

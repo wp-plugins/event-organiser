@@ -88,7 +88,9 @@ class EventOrganiser_Shortcodes {
 			'tooltip'=>'true',
 			'weekends'=>'true',
 			'alldayslot'=>'true',
+			'users_events' => 'false'
 		);
+		
 		$atts = wp_parse_args( $atts, $bool_atts );
 
 		foreach( $bool_atts as $att => $value )
@@ -116,6 +118,7 @@ class EventOrganiser_Shortcodes {
 				$atts['venue'] = eo_get_venue_slug(get_the_ID());
 			}
 		}
+	
 
 		$venue_slugs = explode(',',$atts['venue']);
 
@@ -365,15 +368,15 @@ class EventOrganiser_Shortcodes {
 			'venues' => get_terms( 'event-venue', array('hide_empty' => 0)),
 			'categories' => get_terms( 'event-category', array('hide_empty' => 0)),
 		));
-		wp_localize_script( 'eo_front', 'EOAjax', 
-		array(
+		
+		eo_localize_script( 'eo_front', array(
 			'ajaxurl' => admin_url( 'admin-ajax.php'),
 			'calendars' => self::$calendars,
 			'widget_calendars' => self::$widget_calendars,
 			'fullcal' => $fullcal,
 			'map' => self::$map,
 		));	
-
+		
 		if( !empty(self::$calendars) || !empty(self::$map) || !empty(self::$widget_calendars) ):				
 			wp_enqueue_script( 'eo_qtip2');	
 			wp_enqueue_style('eo_calendar-style');	

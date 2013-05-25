@@ -33,7 +33,7 @@ class EventOrganiser_Calendar_Page extends EventOrganiser_Admin_Page
 		global $wp_locale;
 		
 		wp_enqueue_script( 'eo_calendar' );
-		wp_enqueue_script( 'eo_event' );
+		//wp_enqueue_script( 'eo_event' );
 		wp_localize_script( 'eo_event', 'EO_Ajax_Event', array( 
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 			'startday' => intval( get_option( 'start_of_week' ) ),
@@ -83,6 +83,9 @@ class EventOrganiser_Calendar_Page extends EventOrganiser_Admin_Page
 		//Add screen option
 		$user     = wp_get_current_user();
 		$is12hour = get_user_meta( $user->ID, 'eofc_time_format', true );
+		if( '' === $is12hour )
+			$is12hour = eventorganiser_blog_is_24() ? 0 : 1;
+		
 		add_screen_option( 'eofc_time_format', array( 'value' => $is12hour ) );
 		add_filter( 'screen_settings', array( $this, 'screen_options' ), 10, 2 );
 
@@ -151,11 +154,13 @@ class EventOrganiser_Calendar_Page extends EventOrganiser_Admin_Page
 				if ( !current_user_can( 'edit_event', $post_id ) || !current_user_can( 'delete_event', $post_id ) )
 					wp_die( __( 'You do not have sufficient permissions to edit this event', 'eventorganiser' ) );
 		
-				eo_break_occurrence( $post_id, $event_id );
-
+				$new_event_id = eo_break_occurrence( $post_id, $event_id );
+				
 				//Redirect to prevent resubmisson
-				$redirect = add_query_arg( array( 'post_type' => 'event', 'page' => 'calendar' ), admin_url( 'edit.php' ) );
+				$redirect = get_edit_post_link( $new_event_id, '' );
+				$redirect = add_query_arg( 'message', 20, $redirect );
 				wp_redirect( $redirect );
+				exit;
 
 			elseif( $action == 'delete_occurrence' ):
 				global $EO_Errors;
