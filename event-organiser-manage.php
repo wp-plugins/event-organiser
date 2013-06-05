@@ -8,9 +8,8 @@
 /**
  * Adds custom columns to Event CPT table
  * @since 1.0.0
- * @access private
- * @ignore
  */
+add_filter( 'manage_edit-event_columns', 'eventorganiser_event_add_columns' );
 function eventorganiser_event_add_columns( $columns ) {
 
 	unset( $columns['date'] );//Unset unnecessary columns
@@ -30,13 +29,11 @@ function eventorganiser_event_add_columns( $columns ) {
 
 	return $columns;
 }
-add_filter( 'manage_edit-event_columns', 'eventorganiser_event_add_columns' );
+
 
 /**
  * Registers the custom columns in Event CPT table to be sortable
  * @since 1.0.0
- * @access private
- * @ignore
  */
 add_filter( 'manage_edit-event_sortable_columns', 'eventorganiser_event_sortable_columns' );
 function eventorganiser_event_sortable_columns( $columns ) {
@@ -49,8 +46,6 @@ function eventorganiser_event_sortable_columns( $columns ) {
 /**
  * What to display in custom columns of Event CPT table
  * @since 1.0.0
- * @access private
- * @ignore
  */
 add_action( 'manage_event_posts_custom_column', 'eventorganiser_event_fill_columns', 10, 2 );
 function eventorganiser_event_fill_columns( $column_name, $id ) {

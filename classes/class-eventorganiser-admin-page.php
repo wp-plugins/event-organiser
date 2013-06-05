@@ -1,7 +1,4 @@
 <?php
-/**
- * @ignore
- */
 class EventOrganiser_Admin_Page{
 
 	static $hook;
