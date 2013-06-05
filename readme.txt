@@ -11,13 +11,13 @@ Create and maintain events, including complex reoccurring patterns, venue manage
 
 == Description ==
 
+Event Organiser adds event management that integrates well with your WordPress site. By using WordPress' in-built 'custom post type', this plug-in allows you to create events that have the same functionality as posts, while adding further features that allow you to manage your events. This includes the possibility of repeating your event according to complex schedules and assign your events to venues. This can all be done through an intuitive user interface, which allows you to view your events in the familiar WordPress list or in a calendar page in the amin area.
+
 [**Documentation**](http://wp-event-organiser.com/documentation/) 
 | [**Function Reference**](http://wp-event-organiser.com/codex/) 
 | [**Forums**](http://wp-event-organiser.com/forums/) 
 | [**Demo**](http://wp-event-organiser.com/demo/) 
 | [**Booking Add-on**](http://wp-event-organiser.com/pro-features)
-
-Event Organiser adds event management that integrates well with your WordPress site. By using WordPress' in-built 'custom post type', this plug-in allows you to create events that have the same functionality as posts, while adding further features that allow you to manage your events. This includes the possibility of repeating your event according to complex schedules and assign your events to venues. This can all be done through an intuitive user interface, which allows you to view your events in the familiar WordPress list or in a calendar page in the amin area.
 
 = What's new =
 * Venue map icons are now filtered - [allowing you to change the map icons](http://wp-event-organiser.com/blog/tutorial/changing-the-venue-map-icon/).
@@ -185,6 +185,12 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 6. View of a venue page on the front-end (in a theme based on WordPress TwentyEleven)
 
 == Changelog ==
+
+= 2.1.4 =
+* Fixes bug with calendar introduced in 2.1.3
+* Fixed include/exclude event dates for monthly occurrences
+* Minor improvement to event query handling
+* Updated Italian translation. Thank you, Luca.
 
 = 2.1.3 =
 * Fixes calendar css (ensures event links are white)
