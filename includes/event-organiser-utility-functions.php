@@ -270,53 +270,6 @@ function eo_php2xdate($phpformat=""){
 
 
 /**
- * Very basic class to convert php date format into jQuery UI date format used for javascript.
- *
- * Similar to {@see `eventorganiser_php2xdate()`} - but the format is slightly different for jQuery UI  
- * Takes a php date format and converts it to {@link http://docs.jquery.com/UI/Datepicker/formatDate} so
- * that it can b used in javascript (notably by the datepicker).
- * 
- * **Please note that this function does not convert time formats**
- *
- * @since 1.7
- *
- *@param string $phpformat Format according to http://php.net/manual/en/function.date.php
- *@return string The format translated to xdate format: http://docs.jquery.com/UI/Datepicker/formatDate
- */
-function eventorganiser_php2jquerydate($phpformat=""){
-	$php2jquerydate = array(
-			'Y'=>'yy','y'=>'y','L'=>''/*Not Supported*/,'o'=>'',/*Not Supported*/
-			'j'=>'d','d'=>'dd','D'=>'D','DD'=>'dddd','N'=>'',/*NS*/ 'S' => ''/*NS*/,
-			'w'=>'', /*NS*/ 'z'=>'o',/*NS*/ 'W'=>'w',
-			'F'=>'MM','m'=>'mm','M'=>'M','n'=>'m','t'=>'',/*NS*/
-			'a'=>''/*NS*/,'A'=>''/*NS*/,
-			'B'=>'',/*NS*/'g'=>''/*NS*/,'G'=>''/*NS*/,'h'=>''/*NS*/,'H'=>''/*NS*/,'u'=>'fff',
-			'i'=>''/*NS*/,'s'=>''/*NS*/,
-			'O'=>''/*NS*/, 'P'=>''/*NS*/,
-	);
-
-	$jqueryformat="";
-
-	for($i=0;  $i< strlen($phpformat); $i++){
-
-		//Handle backslash excape
-		if($phpformat[$i]=="\\"){
-			$jqueryformat .= "\\".$phpformat[$i+1];
-			$i++;
-			continue;
-		}
-
-		if(isset($php2jquerydate[$phpformat[$i]])){
-			$jqueryformat .= $php2jquerydate[$phpformat[$i]];
-		}else{
-			$jqueryformat .= $phpformat[$i];
-		}
-	}
-	return $jqueryformat;
-}
-
-
-/**
  * Very basic class to convert php date format into xdate date format used for javascript.
  * @deprecated 2.1.3
  * @ignore
