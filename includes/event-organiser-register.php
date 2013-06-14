@@ -9,7 +9,7 @@
  */
 function eventorganiser_register_script() {
 	global $wp_locale;
-	$version = '2.1.4';
+	$version = '2.1.5';
 
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
 
@@ -80,7 +80,7 @@ add_action('init', 'eventorganiser_register_script');
  * @access private
  */
 function eventorganiser_register_scripts(){
-	$version = '2.1.4';
+	$version = '2.1.5';
 	$ext = (defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? '' : '.min';
 
 	/*  Venue scripts for venue & event edit */
@@ -128,7 +128,7 @@ function eventorganiser_register_scripts(){
 	wp_register_style('eventorganiser-style',EVENT_ORGANISER_URL.'css/eventorganiser-admin-style.css',array('eventorganiser-jquery-ui-style'),$version );
 
 	/* Inline Help */
-       	wp_register_script( 'eo-inline-help', EVENT_ORGANISER_URL.'js/inline-help.js',array( 'jquery', 'eo_qtip2' ), $version, true );
+	wp_register_script( 'eo-inline-help', EVENT_ORGANISER_URL.'js/inline-help.js',array( 'jquery', 'eo_qtip2' ), $version, true );
 }
 add_action( 'admin_init', 'eventorganiser_register_scripts', 5 );
 
