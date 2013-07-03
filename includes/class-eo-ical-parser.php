@@ -22,12 +22,16 @@
  *  *  **status_map** - How to interpret the ICAL STATUS property.
  *  *  **default_status** - Default status of posts (unless otherwise specified by STATUS). Default is 'draft'
  * 
+ * @link http://www.ietf.org/rfc/rfc2445.txt ICAL Specification 
+ * @link http://www.kanzaki.com/docs/ical/ ICAL Specification excerpts
  * @author stephen
  * @package ical-functions
  *
  */
 class EO_ICAL_Parser{
 
+	var $remote_timeout = 10;
+	
 	var $events = array();
 	var $venues = array();
 	var $categories = array();
@@ -69,11 +73,13 @@ class EO_ICAL_Parser{
 			$this->ical_array = $this->url_to_array( $file );
 
 		}else{
-			$this->ical_array = false;
+			$this->ical_array =  WP_Error( 'invalid-ical-source', 
+				__( 'There was an error detecting ICAL source.', 'eventorgansier' )
+				);
 		}
 
-		if( !$this->ical_array )
-			return false;
+		if( is_wp_error( $this->ical_array ) )
+			return $this->ical_array;
 
 		//Go through array and parse events
 		$result = $this->parse_ical_array();
@@ -81,10 +87,6 @@ class EO_ICAL_Parser{
 		$this->events_parsed = count( $this->events );
 		$this->venue_parsed = count( $this->venues );
 		$this->categories_parsed = count( $this->categories );
-			
-		echo '<pre>';
-		print_r( $this );
-		wp_die('');
 	}
 	
 	/**
@@ -94,10 +96,21 @@ class EO_ICAL_Parser{
 	 * @return array|bool Array of line in ICAL feed, false on error 
 	 */
 	function url_to_array( $url ){
-		$contents = wp_remote_retrieve_body( wp_remote_get( $url ) );
+		$response =  wp_remote_get( $url, array( 'timeout' => $this->remote_timeout ) );
+		$contents = wp_remote_retrieve_body( $response );
+
 		if( $contents )
 			return explode( "\n", $contents );
-		return false;
+		
+		if( is_wp_error( $response ) )
+			return $response;
+		
+		$response_code = wp_remote_retrieve_response_code( $response );
+		return new WP_Error( 'unable-to-fetch', 
+				sprintf( 
+					__( 'There was an error fetching the feed. Response code: %s.', 'eventorgansier' ),
+					$response_code
+				));
 	}
 
 	/**
@@ -112,7 +125,10 @@ class EO_ICAL_Parser{
 		$lines = array();
 
 		if( !$file_handle )
-			return false;
+			return new WP_Error( 
+						'unable-to-open', 
+					__( 'There was an error opening the ICAL file.', 'eventorgansier' )
+					);
 
 		//Feed lines into array
 		while (!feof( $file_handle ) ):
@@ -227,7 +243,7 @@ class EO_ICAL_Parser{
 
 		switch( $property ):
 		case 'UID':
-			$this->current_event['UID'] = $value;
+			$this->current_event['uid'] = $value;
 		break;
 
 		case 'CREATED':
@@ -305,7 +321,7 @@ class EO_ICAL_Parser{
 			if( !isset( $this->venues[$venue_name] ) )
 				$this->venues[$venue_name] = $venue_name;
 				
-			$this->current_event['event_venue'] = $venue_name;
+			$this->current_event['event-venue'] = $venue_name;
 			endif;
 		break;
 
@@ -319,8 +335,8 @@ class EO_ICAL_Parser{
 			if( !isset( $this->categories[$cat_name] ) )
 				$this->categories[$cat_name] = $cat_name;
 				
-			if( isset($this->current_event['event_category']) && !in_array( $cat_name, $this->current_event['event_category']) )
-				$this->current_event['event_category'][] = $cat_name;
+			if( isset($this->current_event['event-category']) && !in_array( $cat_name, $this->current_event['event-category']) )
+				$this->current_event['event-category'][] = $cat_name;
 				
 			endforeach;
 
