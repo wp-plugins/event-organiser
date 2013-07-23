@@ -2,7 +2,7 @@
 /*
 Plugin Name: Event Organiser
 Plugin URI: http://www.wp-event-organiser.com
-Version: 2.1.7
+Version: 2.2
 Description: Creates a custom post type 'events' with features such as reoccurring events, venues, Google Maps, calendar views and events and venue pages
 Author: Stephen Harris
 Author URI: http://www.stephenharris.info
@@ -41,7 +41,7 @@ Domain Path: /languages
  * @name $eventorganiser_db_version
  */ 
 global $eventorganiser_db_version;
-$eventorganiser_db_version = '2.1.7';
+$eventorganiser_db_version = '2.2';
 
 
 add_action( 'after_setup_theme', '_eventorganiser_set_constants' );
@@ -95,7 +95,7 @@ function eventorganiser_load_textdomain() {
 	//We could use load_textdomain - but this avoids touching any more constants.
 	load_plugin_textdomain( 'eventorganiser', false, basename( dirname( __FILE__ ) ).'/languages' );
 }
-add_action( 'init', 'eventorganiser_load_textdomain' );
+add_action( 'plugins_loaded', 'eventorganiser_load_textdomain' );
 
 global $eventorganiser_roles;
 $eventorganiser_roles = array(
@@ -117,7 +117,7 @@ register_deactivation_hook(  __FILE__, 'eventorganiser_deactivate' );
 register_uninstall_hook( __FILE__, 'eventorganiser_uninstall' );
 
 
-function eventorganiser_get_option( $option, $default = false ){
+function eventorganiser_get_option( $option = false, $default = false ){
 
       $defaults = array(
 		'url_event' => 'events/event',
@@ -142,6 +142,9 @@ function eventorganiser_get_option( $option, $default = false ){
       );
       $options = get_option( 'eventorganiser_options', $defaults );
       $options = wp_parse_args( $options, $defaults );
+      
+	if( false === $option )
+		return $options;
 
 	/* Backwards compatibility for 'eventag' option */
 	if( $option === 'eventtag' )

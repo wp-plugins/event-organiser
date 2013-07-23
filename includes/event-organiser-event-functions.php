@@ -940,13 +940,15 @@ function eo_get_event_color($post_id=0){
 }
 
 /**
-* Returns an array of classes associated with an event. 
-* Adds eo-event-venue-[venue slug] for the event's venue.
-* Adds eo-event-cat-[category slug] for each event category it bleongs to. 
-* Adds eo-event-[future|past|running].
-* Applies filter {@see `eventorganiser_event_classes`}
+* Returns an array of classes associated with an event. Adds the following classes
+* 
+*  * `eo-event-venue-[venue slug]` - if the event has a venue
+*  * `eo-event-cat-[category slug]` - for each event category the event belongs to. 
+*  * `eo-event-[future|past|running]` - depending on occurrence
+* 
+* Applies filter {@see `eventorganiser_event_classes`} so you can add/remove classes.
+* 
 * @since 1.6
-*
 * @param int $post_id The event (post) ID. Uses current event if empty.
 * @param int $occurrence_id The occurrence ID. Uses current event if empty.
 * @return array Array of classes
@@ -956,15 +958,15 @@ function eo_get_event_classes($post_id=0, $occurrence_id=0){
 
 	$post_id = (int) ( empty($post_id) ? get_the_ID() : $post_id );
 	$occurrence_id = (int) ( empty($occurrence_id) && isset($post->occurrence_id)  ? $post->occurrence_id : $occurrence_id );
-
+	
 	$event_classes = array();
 			
 	//Add venue class
-	if( eo_get_venue_slug() )
-		$event_classes[] = 'eo-event-venue-'.eo_get_venue_slug();
+	if( $venue_slug = eo_get_venue_slug( $post_id ) )
+		$event_classes[] = 'eo-event-venue-' . $venue_slug;
 
 	//Add category classes
-	$cats= get_the_terms(get_the_ID(), 'event-category');
+	$cats= get_the_terms( $post_id, 'event-category' );
 	if( $cats && !is_wp_error($cats) ){	
 		foreach ($cats as $cat)
 			$event_classes[] = 'eo-event-cat-'.$cat->slug;
@@ -972,7 +974,7 @@ function eo_get_event_classes($post_id=0, $occurrence_id=0){
 
 	//Add 'time' class
 	$start = eo_get_the_start(DATETIMEOBJ, $post_id, null, $occurrence_id);
-	$end= eo_get_the_end(DATETIMEOBJ, $post_id, null, $occurrence_id);
+	$end = eo_get_the_end(DATETIMEOBJ, $post_id, null, $occurrence_id);
 	$now = new DateTime('now',eo_get_blog_timezone());
 	if( $start > $now ){
 		$event_classes[] = 'eo-event-future';
@@ -981,9 +983,12 @@ function eo_get_event_classes($post_id=0, $occurrence_id=0){
 	}else{
 		$event_classes[] = 'eo-event-running';
 	}
-
-	$event_classes = array_unique($event_classes);
-	return  apply_filters('eventorganiser_event_classes', $event_classes, $post_id, $occurrence_id);
+	
+	$event_classes = apply_filters( 'eventorganiser_event_classes', $event_classes, $post_id, $occurrence_id );
+	$event_classes = array_unique( $event_classes );
+	$event_classes = array_map( 'sanitize_html_class', $event_classes );
+	$event_classes = array_filter( $event_classes );
+	return $event_classes;
 }
 
 
@@ -1035,6 +1040,48 @@ function eo_get_events_feed(){
 	return get_feed_link('eo-events');
 }
 
+/**
+ * Retrieves the permalink for the ICAL event feed for a category. A simple wrapper for `{@see get_term_feed_link()}`
+ * 
+ * If you pass an integer this is assumed to be the term ID of the category. If you pass a string it
+ * assumed to be the slug.
+ * 
+ * @since 2.2
+ * @param string|int $cat_slug_or_id Category ID as an **integer**, or slug as a **string** 
+ * @return string The link to the ICAL event category feed.
+ */
+function eo_get_event_category_feed( $cat_slug_or_id ){
+	
+	if( is_int( $cat_slug_or_id ) )
+		return get_term_feed_link( $cat_slug_or_id, 'event-category', 'eo-events' );
+	
+	$category = get_term_by( 'slug', $cat_slug_or_id, 'event-category' );
+	
+	if( !$category )
+		return false;
+	
+	return get_term_feed_link( $category->term_id, 'event-category', 'eo-events' );
+}
+
+/**
+ * Retrieves the permalink for the ICAL event feed for a venue. A simple wrapper for `{@see get_term_feed_link()}`.
+ *
+ * If you pass an integer this is assumed to be the term ID of the category. If you pass a string it
+ * assumed to be the slug.
+ *
+ * @since 2.2
+ * @param string|int $venue_slug_or_id Category ID as an **integer**, or slug as a **string**
+ * @return string The link to the ICAL event category feed.
+ */
+function eo_get_event_venue_feed( $venue_slug_or_id ){
+
+	$venue_id = eo_get_venue_id_by_slugorid( $venue_slug_or_id );
+	
+	if( !$venue_id )
+		return false;
+
+	return get_term_feed_link( $venue_id, 'event-venue', 'eo-events' );
+}
 
 /**
  * Returns a the url which adds a particular occurrence of an event to

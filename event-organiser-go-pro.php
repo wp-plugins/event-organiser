@@ -69,7 +69,7 @@ class EventOrganiser_Pro_Page extends EventOrganiser_Admin_Page
 			
 			self::print_feature( 
 				__( 'Flexible Booking Options', 'eventorganiser' ), 
-				__("Sell tickets for specific dates or sell tickets for all dates of an event – such as booking places on a course. You can offer multiple tickets, and customise the booking form to suit your needs.", 'eventorganiser'),
+				__('Sell tickets for specific dates or sell tickets for all dates of an event - such as booking places on a course. You can offer multiple tickets, and customise the booking form to suit your needs.', 'eventorganiser'),
 				'eo-pro-ticket-picker.png'
 			); 
 			self::print_feature( 
@@ -87,7 +87,7 @@ class EventOrganiser_Pro_Page extends EventOrganiser_Admin_Page
 			<div style="clear:both"></div>
 
 			<p>
-			<strong><a href="http://wp-event-organiser.com/pro-features"><?php _e('Find out more &hellip;', 'eventorganiser')?></a></strong>
+			<strong><a href="http://wp-event-organiser.com/pro-features?aid=7"><?php _e('Find out more &hellip;', 'eventorganiser')?></a></strong>
 			</p>
 			
 			<hr style="color:#CCC;background-color:#CCC;border:0;border-bottom:1px solid #CCC;">

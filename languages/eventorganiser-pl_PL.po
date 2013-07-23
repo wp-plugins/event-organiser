@@ -167,6 +167,11 @@ msgstr "De hele dag (van 0.00 - 24.00 uur)"
 msgid "All Day"
 msgstr "Cały dzień"
 
+#: ../includes/event-organiser-ajax.php:516
+#: ../includes/event-organiser-event-functions.php:1021
+msgid "All Day"
+msgstr "Cały dzień"
+
 #: ../includes/event-organiser-cpt.php:145
 msgid "All events"
 msgstr "Wszystkie wydarzenia"
@@ -496,7 +501,7 @@ msgstr "Włącz przyjazne linki dla wydarzeń:"
 
 #: ../event-organiser-settings.php:173
 msgid "Enable events ICAL feed:"
-msgstr "ICAL Feed voor gebeurtenissen activeren"
+msgstr "Ustawienia ICal dla wydarzeń:"
 
 #: ../event-organiser-settings.php:190
 msgid "Enable templates:"
@@ -996,7 +1001,7 @@ msgstr "Późniejsze wydarzenia <span class=\"meta-nav\">&rarr;</span>"
 #: ../includes/class-event-organiser-im-export.php:457
 #, php-format
 msgid "Line: %1$d"
-msgstr ""
+msgstr "Linia: %1$d"
 
 #: ../classes/class-eo-event-list-widget.php:41
 msgid "List category slug(s), seperate by comma. Leave blank for all"

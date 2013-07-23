@@ -59,15 +59,28 @@ class EventOrganiser_Shortcodes {
 		extract( shortcode_atts( array(
 			'title' => 'Subscribe to calendar',
 			'type' => 'google',
-		      'class' => '',
-		      'id' => '',
+			'class' => '',
+			'id' => '',
+			'style' => '',
+			'category' => false,
+			'venue' => false,
 		), $atts ) );
+		
+		if( $category ){
+			$url = eo_get_event_category_feed( $category );
+			
+		}elseif( $venue ){
+			$url = eo_get_event_venue_feed( $venue );
+		
+		}else{
+			$url = eo_get_events_feed();
+		
+		}
 
-		$url = eo_get_events_feed();
-
-		$class = esc_attr($class);
-		$title = esc_attr($title);
-		$id = esc_attr($id);
+		$class = $class ? 'class="'.esc_attr($class).'"' : false;
+		$title = $title ? 'title="'.esc_attr($title).'"' : false;
+		$style = $style ? 'style="'.esc_attr($style).'"' : false;
+		$id = $id ? 'id="'.esc_attr($id).'"' : false;
 		
 		if(strtolower($type)=='webcal'):
 			$url = str_replace( 'http://', 'webcal://',$url);
@@ -77,7 +90,7 @@ class EventOrganiser_Shortcodes {
 			$url = add_query_arg('cid',urlencode($url),'http://www.google.com/calendar/render');
 		endif;
 
-		$html = '<a href="'.$url.'" target="_blank" class="'.$class.'" title="'.$title.'" id="'.$id.'">'.$content.'</a>';
+		$html = '<a href="'.$url.'" target="_blank" '.$class.' '.$title.' '.$id.' '.$style.'>'.$content.'</a>';
 		return $html;
 	}
 
