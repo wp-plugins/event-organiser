@@ -160,11 +160,6 @@ msgstr "Wszystkie daty i godziny muszą być podane w określonym formacie. Form
 
 #: ../event-organiser-edit.php:97
 msgid "All day"
-msgstr "De hele dag (van 0.00 - 24.00 uur)"
-
-#: ../includes/event-organiser-ajax.php:516
-#: ../includes/event-organiser-event-functions.php:1021
-msgid "All Day"
 msgstr "Cały dzień"
 
 #: ../includes/event-organiser-ajax.php:516
@@ -401,7 +396,7 @@ msgstr "Usuwanie zakończonych wydarzeń:"
 #: ../event-organiser-settings.php:70
 #: ../event-organiser.php:106
 msgid "Delete Other's Events"
-msgstr "Items van anderen verwijderen"
+msgstr "Usuwanie wydarzeń innych"
 
 #: ../includes/event-organiser-ajax.php:315
 msgid "Delete this occurrence"
