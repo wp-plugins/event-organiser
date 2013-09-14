@@ -68,7 +68,8 @@ class EO_Events_Agenda_Widget extends WP_Widget{
   function widget($args, $instance){
 	global $wp_locale;
 	wp_enqueue_script( 'eo_front');
-	wp_enqueue_style( 'eo_front');
+	if( !eventorganiser_get_option( 'disable_css' ) )
+		wp_enqueue_style( 'eo_front');
 	extract($args, EXTR_SKIP);
 
 	add_action('wp_footer', array(__CLASS__, 'add_options_to_script'));
@@ -105,7 +106,7 @@ class EO_Events_Agenda_Widget extends WP_Widget{
     	echo $after_widget;
   }
 
-	function add_options_to_script() {
+	static function add_options_to_script() {
 		if(!empty(self::$agendas))
 			wp_localize_script( 'eo_front', 'eo_widget_agenda', self::$agendas);	
 	}

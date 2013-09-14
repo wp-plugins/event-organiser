@@ -31,7 +31,7 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 		
 		
 		$eo_debugger = new EventOrganiser_Debugger();
-		$eo_debugger->set_prequiste( 'WordPress', '3.3', '3.5.1');
+		$eo_debugger->set_prequiste( 'WordPress', '3.3', '3.6.1');
 		//$eo_debugger->set_known_plugin_conflicts();
 		//$eo_debugger->set_known_theme_conflicts();
 		$eo_debugger->set_db_tables( 'eo_events', 'eo_venuemeta' );
@@ -39,6 +39,10 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 		do_action_ref_array( 'eventorganiser_debugger_setup', array( &$eo_debugger ) );
 		
 		$this->debugger = $eo_debugger;
+		
+		if( !empty( $_GET['data'] ) && !empty( $_GET['data']['jqueryv'] ) ){
+			$eo_debugger->set_jquery_version( $_GET['data']['jqueryv'] );
+		}
 		
 		if( !empty( $_GET['eo-download-debug-file'] ) && current_user_can( 'manage_options' ) && wp_verify_nonce( $_GET['eo-download-debug-file'], 'eo-download-debug-file' ) ){
 			$this->debugger->download_debug_info();
@@ -75,7 +79,7 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 		
 		<?php 
 			printf( 
-				'<p><a href="%s" class="button secondary">%s</a></p>',
+				'<p><a href="%s" data-eo-debug="downloadurl" class="button secondary">%s</a></p>',
 				add_query_arg( 'eo-download-debug-file', wp_create_nonce( 'eo-download-debug-file' ) ),
 				__( "Download system information file", 'eventorganiser' )
 			);
@@ -83,99 +87,156 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 				
 		<table class="widefat">
 				<tr>
-					<th><?php esc_html_e('Site url');?></th>
+					<th> Site url </th>
 					<td><?php echo site_url(); ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Home url');?></th>
+					<th> Home url </th>
 					<td><?php echo home_url(); ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Multisite');?></th>
+					<th> Multisite </th>
 					<td><?php echo is_multisite() ? 'Yes' : 'No' ?></td>
 				</tr>
+				
 				<tr>
-					<th><?php esc_html_e('Event Organiser version');?></th>
+					<th> Permalink </th>
+					<td>
+					<?php echo get_option( 'permalink_structure' );?>
+					</td>
+				</tr>
+				<tr>
+					<th> Event Organsier version </th>
 					<td><?php echo EVENT_ORGANISER_VER; ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('WordPress');?></th>
+					<th> WordPress </th>
 					<td>
 					<?php $eo_debugger->verbose_prequiste_check( 'WordPress', get_bloginfo( 'version' ) );?>
 					</td>
 				</tr>
+				
 				<tr>
-					<th><?php esc_html_e('PHP Version');?></th>
+					<th> jQuery Version </th>
+					<td>
+						<span data-eo-debug="jqueryversion"></span>
+					</td>
+				</tr>
+				<script>
+				jQuery(document).ready( function($) {
+					var eventorganiser = eventorganiser || {}; 
+					eventorganiser.add_query_arg = function( key, value, uri ) {
+						  var re = new RegExp("([?|&])" + key + "=.*?(&|$)", "i");
+						  separator = uri.indexOf('?') !== -1 ? "&" : "?";
+						  if (uri.match(re)) {
+						    return uri.replace(re, '$1' + key + "=" + value + '$2');
+						  }
+						  else {
+						    return uri + separator + key + "=" + value;
+						  }
+						}
+					
+				    $('[data-eo-debug="jqueryversion"]').each(function() {
+						
+						var version	= $().jquery;
+						$(this).text( version);
+
+						$('[data-eo-debug="downloadurl"]').each(function(){
+							var new_url = eventorganiser.add_query_arg( 'data[jqueryv]', version, $(this).attr('href') );
+							$(this).attr('href',new_url);
+						}); 
+				    });
+				});
+				</script>
+				
+				<tr>
+					<th> PHP Version </th>
 					<td> <?php echo PHP_VERSION; ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('MySQL Version');?></th>
+					<th> MySQL Version </th>
 					<td> <?php echo mysql_get_server_info(); ?></td>
 				</tr>    
 				<tr>
-					<th><?php esc_html_e('Web Server');?></th>
+					<th> Web Server </th>
 					<td> <?php echo $_SERVER['SERVER_SOFTWARE']; ?></td>
 				</tr>      
 				<tr>
-					<th><?php esc_html_e('PHP Memory Usage');?></th>
+					<th> PHP Memory Usage </th>
 					<th><?php echo $eo_debugger->verbose_memory_check(); ?>
 				</tr>   
 				<tr>
-					<th><?php esc_html_e('PHP Post Max Size');?></th>
+					<th> PHP Post Max Size </th>
 					<td><?php echo ini_get('post_max_size'); ?></td>
 				</tr>   
 				<tr>
-					<th><?php esc_html_e('PHP Upload Max Size');?></th>
+					<th> PHP Upload Max Size </th>
 					<td><?php echo ini_get('upload_max_filesize'); ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('PHP cURL Support');?></th>
-					<td>  <?php echo (function_exists('curl_init')) ? _e('Yes', 'eventorganiser') . "\n" : _e('No', 'eventorganiser') . "\n"; ?></td>
-				</tr>        
+					<th> PHP FSOCKOPEN Support </th>
+					<td>  <?php echo (function_exists('fsockopen')) ? _e('Yes', 'eventorganiser') . "\n" : _e('No', 'eventorganiser') . "\n"; ?></td>
+				</tr>
 				<tr>
-					<th><?php esc_html_e('Plug-ins');?></th>
+					<th> PHP cURL Support </th>
+					<td>  <?php echo (function_exists('curl_init')) ? _e('Yes', 'eventorganiser') . "\n" : _e('No', 'eventorganiser') . "\n"; ?></td>
+				</tr>
+				<tr>
+					<th> OpenSSL Support </th>
+					<td>  <?php echo (function_exists('openssl_verify')) ? _e('Yes', 'eventorganiser') . "\n" : _e('No', 'eventorganiser') . "\n"; ?></td>
+				</tr>
+				<tr>
+					<th> Plug-ins </th>
 					<td>
 					<?php $eo_debugger->verbose_plugin_check();?>
 					</td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Theme');?></th>
+					<th> Theme </th>
 					<td>
 					<?php $eo_debugger->verbose_theme_check();?>
 					</td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Databse Prefix:');?></th>
+					<th> Databse Prefix: </th>
 					<td><?php global $wpdb; echo $wpdb->prefix; ?></td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Database tables');?></th>
+					<th> Database tables </th>
 					<td>
 					<?php $eo_debugger->verbose_database_check();?>
 					</td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Database character set');?></th>
+					<th> Database character set </th>
 					<td>
 					<?php $eo_debugger->verbose_database_charset_check();?>
 					</td>
 				</tr>
 				<tr>
-					<th><?php esc_html_e('Debug mode');?></th>
+					<th> Debug mode </th>
 					<td><?php echo defined( 'WP_DEBUG' ) && WP_DEBUG ? 'Enabled' : 'Disabled'; ?></td>
 				</tr>
-				
 				<tr>
-					<th><?php printf( esc_html__( '%s present', 'eventorganiser' ), '<code>wp_footer()</code>' );?></th>
-					<td><?php $eo_debugger->verbose_footer_check();?></td>
-				</tr>	
+					<th> WP Cron </th>
+					<td>
+						<?php 
+							if( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON )
+								echo 'Disabled';
+							elseif( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON )
+								echo 'Alternative';
+    						else
+								echo 'Enabled';
+						?>
+					</td>
+				</tr>
 				<tr>
-					<th><?php esc_html_e('Widget Sidebars');?></th>
-					<td><?php $eo_debugger->verbose_sidebar_check();?></td>
-				</tr>	
-				<tr>
-					<th><?php esc_html_e('Timezone');?></th>
+					<th> Timezone </th>
 					<td><?php echo eo_get_blog_timezone()->getName(); printf( ' ( %s / %s ) ', get_option( 'gmt_offset' ), get_option( 'timezone_string' ) )?></td>
+				</tr>
+				<tr>
+					<th> Language </th>
+					<td><?php echo defined( 'WP_LANG' ) && WP_LANG ? WP_LANG : 'en_us'; ?></td>
 				</tr>
 		</table>
 		<?php 
@@ -202,6 +263,8 @@ class EventOrganiser_Debugger{
 	var $ok_class = 'eo-debug-ok';
 	var $warning_class = 'eo-debug-warning';
 	var $alert_class = 'eo-debug-alert';
+	
+	var $jquery_version = false;
 	
 	function set_plugin( $plugin ){
 		$this->plugin = $plugin;
@@ -232,6 +295,27 @@ class EventOrganiser_Debugger{
 		$this->db_tables = array_merge( $this->db_tables, $args );
 	}
 
+	function set_jquery_version( $v ){
+		$this->jquery_version = $v;
+	}
+	
+	function get_memory_usage( $context = false ){
+		$memory_usage =  round( memory_get_usage() / 1024 / 1024, 2);
+		if( 'percent' == $context )
+			return $percentage = round( $memory_usage / ini_get( 'memory_limit' ) * 100, 0 );
+			
+		return $memory_usage;
+	}
+	
+	function get_cron_status(){
+		if( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON )
+			return 0;
+		elseif( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON )
+			return 2;
+		else
+			return 1;
+	}
+	
 	function check_prequiste( $requirement, $v ){
 		if( !isset( $this->prequiste[$requirement] ) )
 			return 1;
@@ -287,6 +371,7 @@ class EventOrganiser_Debugger{
 		}
 	}
 
+
 	function verbose_database_check(){
 		if( $this->db_tables ){
 			foreach( $this->db_tables as $db_table ){
@@ -339,36 +424,7 @@ class EventOrganiser_Debugger{
 			);
 		}
 	}
-	
-	function verbose_sidebar_check(){
-		$footer_present = get_option( 'eo_sidebar_correct' );
 
-		if( $footer_present === false ){
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->alert_class ),
-				__( 'Unknown', 'eventorganiser' ),
-				sprintf( __( 'Turn <a href="%s">WP_Debug mode</a> on and revisit the front-end to check' ), 'http://codex.wordpress.org/WP_DEBUG' )
-		);
-		}elseif( $footer_present == 1 ){
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->ok_class ),
-				__( 'Correctly registered', 'eventorganiser' ),
-				sprintf( __( 'Turn <a href="%s">WP_Debug mode</a> on and revisit the front-end to check' ), 'http://codex.wordpress.org/WP_DEBUG' )
-			);
-		}else{
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->warning_class ),
-				__( 'Incorrectly registered', 'eventorganiser' ),
-				sprintf(
-					__( "The widget sidebars are incorrectly registered. See the <a href='%s'>FAQ</a> or contact support to resolve this." ),
-					'http://wp-event-organiser.com/faq#i-cannot-navigate-between-months-on-the-widget-calendar'
-				)
-			);
-		}
-	}
 	
 	function verbose_memory_check(){
 
@@ -389,36 +445,6 @@ class EventOrganiser_Debugger{
 			);
 		}
 
-	}
-	
-	function verbose_footer_check(){
-		$footer_present = get_option( 'eo_wp_footer_present' );
-		
-		if( $footer_present === false ){
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->alert_class ),
-				__( 'Unknown', 'eventorganiser' ),
-				sprintf( __( 'Turn <a href="%s">WP_Debug mode</a> on and revisit the front-end to check' ), 'http://codex.wordpress.org/WP_DEBUG' )
-			);
-		}elseif( $footer_present == 1 ){
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->ok_class ),
-				__( 'Yes', 'eventorganiser' ),
-				sprintf( __( 'Turn <a href="%s">WP_Debug mode</a> on and revisit the front-end to check' ), 'http://codex.wordpress.org/WP_DEBUG' )
-			);
-		}else{
-			printf(
-				'<span class="%s">%s</span><br/> %s',
-				esc_attr( $this->warning_class ),
-				__( 'No', 'eventorganiser' ),
-				sprintf( 
-					__( "The <a href='%s'>wp_footer hook</a> could be not be found. Without, for example, the calendar will not function" ), 
-					'http://codex.wordpress.org/Function_Reference/wp_footer' 
-				)
-			);
-		}
 	}
 	
 	public function download_debug_info(){
@@ -462,33 +488,41 @@ class EventOrganiser_Debugger{
 	
 		echo '### Site Information ###' . "\n";
 		echo "\n";
-		echo esc_html__('Site url')."\t\t\t".site_url()."\n";
-		echo esc_html__('Home url')."\t\t\t".home_url()."\n";
-		echo esc_html__('Multisite')."\t\t\t".( is_multisite() ? 'Yes' : 'No' )."\n";
+		echo 'Site url' . "\t\t\t".site_url()."\n";
+		echo 'Home url' . "\t\t\t".home_url()."\n";
+		echo 'Multisite' ."\t\t\t".( is_multisite() ? 'Yes' : 'No' )."\n";
+		echo 'Permalink' . "\t\t\t" . get_option( 'permalink_structure' ) . "\n";
 	
 		echo "\n";
 		echo "\n";
 		echo '### Versions ###' . "\n";
 		echo "\n";
 		
-		echo esc_html__('Event Organiser')."\t\t" . EVENT_ORGANISER_VER."\n";
-		echo esc_html__('WordPress')."\t\t\t" . get_bloginfo( 'version' ) ."\n";
-		echo esc_html__('PHP Version')."\t\t\t" . PHP_VERSION ."\n";
-		echo esc_html__('MySQL Version')."\t\t" . mysql_get_server_info() ."\n";
+		echo 'Event Organiser' . "\t\t" . EVENT_ORGANISER_VER . "\n";
+		if( $this->jquery_version )
+			echo 'jQuery Version' . "\t\t" . EVENT_ORGANISER_VER . "\n";
+		echo 'WordPress' . "\t\t\t" . get_bloginfo( 'version' ) ."\n";
+		echo 'PHP Version' . "\t\t\t" . PHP_VERSION ."\n";
+		echo 'MySQL Version' . "\t\t" . mysql_get_server_info() ."\n";
 	
 		echo "\n";
 		echo "\n";
 		echo '### Server Information ###' . "\n";
 		echo "\n";
-		echo esc_html__('Web Server')."\t\t\t" . $_SERVER['SERVER_SOFTWARE'] ."\n";
-		echo esc_html__('PHP Memory Limit')."\t" .ini_get( 'memory_limit' ) ."\n";
-	
+		echo 'Web Server' ."\t\t\t" . $_SERVER['SERVER_SOFTWARE'] ."\n";
+		echo 'PHP Memory Usage' ."\t" . $this->get_memory_usage( 'percent' ) . '%' ."\n";
+		echo 'PHP Memory Limit' ."\t" . ini_get( 'memory_limit' ) ."\n";
+		echo 'PHP Upload Max Size' ."\t" . ini_get('post_max_size') ."\n";
+		echo 'PHP FSOCKOPEN support' ."\t" . ( function_exists('fsockopen')  ? 'Yes' : 'No' ) ."\n";
+		echo 'PHP cURL support' ."\t" . ( function_exists('curl_init')  ? 'Yes' : 'No' ) ."\n";
+		echo 'PHP openSSL support' ."\t" . ( function_exists('openssl_verify')  ? 'Yes' : 'No' ) ."\n";
+			
 		echo "\n";
 		echo "\n";
 		echo '### Plug-ins & Themes ###' . "\n";
 		echo "\n";
-		echo esc_html__('Active Plug-ins')."\n\t-\t" . implode( "\n\t-\t", $active_plugins ) . "\n";
-		echo esc_html__('Theme')."\n\t-\t" . $theme->get('Name').' ('.$theme->get('Version').')' . "\n";
+		echo 'Active Plug-ins' ."\n\t-\t" . implode( "\n\t-\t", $active_plugins ) . "\n";
+		echo 'Theme' . "\n\t-\t" . $theme->get('Name').' ('.$theme->get('Version').')' . "\n";
 	
 		echo "\n";
 		echo "\n";
@@ -500,7 +534,14 @@ class EventOrganiser_Debugger{
 	
 		echo "\n";
 		echo "\n";
-		echo '### Settings ###' . "\n";
+		echo '### Site Settings ###' . "\n";
+		echo 'Timezone' . "\t\t\t" . eo_get_blog_timezone()->getName() . sprintf( ' ( %s / %s ) ', get_option( 'gmt_offset' ), get_option( 'timezone_string' ) ) . "\n";
+		echo 'WP Cron' . "\t\t\t" . ( $this->get_cron_status() == 0 ? 'Disabled' :  ( $this->get_cron_status() == 1 ? 'Enabled' : 'Alternative ') ) . "\n";
+		echo 'WP Lang' . "\t\t\t" . ( defined( 'WP_LANG' ) && WP_LANG ? WP_LANG : 'en_us' );
+							
+		echo "\n";
+		echo "\n";
+		echo '### Event Organiser Settings ###' . "\n";
 		foreach( $options['event-organiser'] as $option => $value ){
 			if( is_array( $value ) )
 				$value = implode( ', ', $value );

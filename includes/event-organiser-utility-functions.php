@@ -24,6 +24,7 @@
  * @param string|constant $format How to format the date, see http://php.net/manual/en/function.date.php  or DATETIMEOBJ constant to return the datetime object.
  * @return string|dateTime The formatted date
 */
+
 function eo_format_datetime($datetime,$format='d-m-Y'){
 	global  $wp_locale;
 
@@ -595,10 +596,11 @@ function eventorganiser_radio_field( $args ){
 function eventorganiser_select_field($args){
 
 	$args = wp_parse_args($args,array(
-			'selected'=>'', 'help' => null, 'options'=>'', 'name'=>'', 'echo'=>1,
-			'label_for'=>'','class'=>'','disabled'=>false,'multiselect'=>false,
-			'inline_help' => false
-		));	
+		'selected'=>'', 'help' => null, 'options'=>'', 'name'=>'', 'echo'=>1,
+		'label_for'=>'','class'=>'','disabled'=>false,'multiselect'=>false,
+		'inline_help' => false, 'style' => false, 'data' => false,
+	));	
+	
 
 	$id = ( !empty($args['id']) ? $args['id'] : $args['label_for']);
 	$name = isset($args['name']) ?  $args['name'] : '';
@@ -607,12 +609,21 @@ function eventorganiser_select_field($args){
 	$class = implode( ' ', $classes );
 	$multiselect = ($args['multiselect'] ? 'multiple' : '' );
 	$disabled = ($args['disabled'] ? 'disabled="disabled"' : '' );
-
+	$style = (  !empty($args['style']) ?  sprintf('style="%s"', $args['style']) : '' );
+	
+	//Custom data-* attributes
+	$data = '';
+	if( !empty( $args['data'] ) && is_array( $args['data'] ) ){
+		foreach( $args['data'] as $key => $attr_value ){
+			$data .= sprintf( 'data-%s="%s"', esc_attr( $key ), esc_attr( $attr_value ) );
+		}
+	}
+	
 	$html = sprintf('<select %s name="%s" id="%s" %s>',
 		!empty( $class ) ? 'class="'.$class.'"'  : '',
 			esc_attr($name),
 			esc_attr($id),
-			$multiselect.' '.$disabled
+			$multiselect.' '.$disabled.' '.$style. ' '.$data
 		);
 		if( !empty( $args['show_option_all'] ) ){
 			$html .= sprintf('<option value="" %s> %s </option>',selected( empty($selected), true, false ), esc_html( $args['show_option_all'] ) );
@@ -665,7 +676,7 @@ function eventorganiser_text_field($args){
 		array(
 		 	'type' => 'text', 'value'=>'', 'placeholder' => '','label_for'=>'', 'inline_help' => false,
 			 'size'=>false, 'min' => false, 'max' => false, 'style'=>false, 'echo'=>true, 'data'=>false,
-			'class' => false,
+			'class' => false, 'required' => false,
 			)
 		);		
 
@@ -682,6 +693,8 @@ function eventorganiser_text_field($args){
 	$style = (  !empty($args['style']) ?  sprintf('style="%s"', $args['style']) : '' );
 	$placeholder = ( !empty($args['placeholder']) ? sprintf('placeholder="%s"', $args['placeholder']) : '');
 	$disabled = ( !empty($args['disabled']) ? 'disabled="disabled"' : '' );
+	$required = ( !empty($args['required']) ? 'required="required"' : '' );
+	
 
 	//Custom data-* attributes
 	$data = '';
@@ -691,7 +704,7 @@ function eventorganiser_text_field($args){
 		}
 	}
 
-	$attributes = array_filter( array($min,$max,$size,$placeholder,$disabled, $style, $data ) );
+	$attributes = array_filter( array($min,$max,$size,$placeholder,$disabled, $disabled, $style, $data ) );
 
 	$html = sprintf('<input type="%s" name="%s" class="%s regular-text ltr" id="%s" value="%s" autocomplete="off" %s /> %s',
 		esc_attr( $type ), 
@@ -736,7 +749,7 @@ function eventorganiser_text_field($args){
 function eventorganiser_checkbox_field($args=array()){
 
 	$args = wp_parse_args($args,array(
-		 	 'help' => '','name'=>'', 'class'=>'',
+		 	 'help' => '','name'=>'', 'class'=>'', 'label_for' => '',
 			'checked'=>'', 'echo'=>true,'multiselect'=>false
 		));
 
@@ -1135,11 +1148,21 @@ function eventorganiser_append_dependency( $handle, $dep ){
  * @return string The escaped string.
  */
 function eventorganiser_escape_ical_text( $text ){
-	$text = str_replace("\\", "\\\\", $text);
-	$text = str_replace(",", "\,", $text);
-	$text = str_replace(";", "\;", $text);
-	$text = str_replace("\n", "\n ", $text);
-	return $text;
+	
+	$text = str_replace( "\\", "\\\\", $text );
+	$text = str_replace( ",", "\,", $text );
+	$text = str_replace( ";", "\;", $text );
+	$text = str_replace( "\n", "\n ", $text );
+	
+	$text_arr = array();
+	
+	$lines = ceil( strlen( $text ) / 75 );
+	
+	for( $i = 0; $i < $lines; $i++ ){
+		$text_arr[$i] = mb_substr( $text, $i * 75, 75 );
+	}
+
+	return join( $text_arr, "\r\n " );
 }
 
 /**

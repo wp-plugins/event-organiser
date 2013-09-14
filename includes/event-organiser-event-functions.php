@@ -456,7 +456,7 @@ function eo_get_next_occurrence_of($post_id=0){
 	$now_time =$blog_now->format('H:i:s');
 	
 	$nextoccurrence  = $wpdb->get_row($wpdb->prepare("
-		SELECT StartDate, StartTime, EndDate, FinishTime
+		SELECT event_id as occurrence_id, StartDate, StartTime, EndDate, FinishTime
 		FROM  {$wpdb->eo_events}
 		WHERE {$wpdb->eo_events}.post_id=%d
 		AND ( 
@@ -470,8 +470,9 @@ function eo_get_next_occurrence_of($post_id=0){
 
 	$start = new DateTime($nextoccurrence->StartDate.' '.$nextoccurrence->StartTime, $tz);
 	$end = new DateTime($nextoccurrence->EndDate.' '.$nextoccurrence->FinishTime, $tz);
+	$occurrence_id = $nextoccurrence->occurrence_id;
 
-	return compact('start','end');
+	return compact( 'start', 'end', 'occurrence_id');
 }
 
 
@@ -940,6 +941,29 @@ function eo_get_event_color($post_id=0){
 }
 
 /**
+* Accepts a color in RGB hex format and returns a string containing "#000000"
+* (black) or "#ffffff" (white) depending on which would be more readable when
+* overlaid on top of the supplied color.
+*
+* @param string $color A color in RGB hex format with or without a leading hash
+* @return string A string containing either "#000000" or "#ffffff"
+ */
+function eo_get_event_textcolor( $color ) {
+	// Remove the leading hash if present
+	$color = ltrim( $color, '#' );
+
+	// Calculate the luma (Y) of the color using the formula provided at
+	// https://en.wikipedia.org/wiki/YIQ#Formulas. Full luma is 255000 when
+	// the RGB color is white (#ffffff). Luma above the mid point, 127500,
+	// should return "#000000", otherwise "#ffffff".
+	$r = hexdec( substr( $color, 0, 2 ) ); 
+	$g = hexdec( substr( $color, 2, 2 ) ); 
+	$b = hexdec( substr( $color, 4, 2 ) ); 
+	$y = ( $r * 299 ) + ( $g * 587 ) + ( $b * 114 );
+	return ( $y > 127500 ) ? '#000000' : '#ffffff';
+}
+
+/**
 * Returns an array of classes associated with an event. Adds the following classes
 * 
 *  * `eo-event-venue-[venue slug]` - if the event has a venue
@@ -1085,7 +1109,7 @@ function eo_get_event_venue_feed( $venue_slug_or_id ){
 
 /**
  * Returns a the url which adds a particular occurrence of an event to
- * a google calendar. Must be used inside the loop
+ * a google calendar.
  *
  * Returns an url which adds a particular occurrence of an event to a Google calendar. This function can only be used inside the loop. 
  * An entire series cannot be added to a Google calendar - however users can subscribe to your events. Please note that, unlike 
@@ -1096,54 +1120,65 @@ function eo_get_event_venue_feed( $venue_slug_or_id ){
  * <code>
  *    <?php 
  *      //Inside the loop 
- *      $url = eo_get_the_GoogleLink();
+ *      $url = eo_get_add_to_google_link();
  *      echo '<a href="'.esc_url($url).'" title="Click to add this event to a Google calendar"> Add to Google </a>'; 
  *      ?>
  * </code>
- * @since 1.2.0
- *
+ * @since 2.3
+ * @param int $post_id Post ID of the event.
+ * @param int $occurrence_id The occurrence ID.
  * @return string Url which adds event to a google calendar
  */
-function eo_get_the_GoogleLink(){
+function eo_get_add_to_google_link( $event_id = 0, $occurrence_id = 0 ){
+	
 	global $post;
-	setup_postdata($post);
+	$event = $post;
+	
+	$event_id = (int) ( $event_id ? $event_id : get_the_ID() );
+	$occurrence_id = (int) ( !$occurrence_id && isset( $event->occurrence_id )  ? $event->occurrence_id : $occurrence_id );
 
-	if(empty($post)|| get_post_type($post )!='event'){ 
+	$post = get_post( $event_id );
+	
+	if( !$occurrence_id || !$post || 'event' != get_post_type( $post ) ){
 		wp_reset_postdata();
 		return false;
 	}
-
-	$start = eo_get_the_start(DATETIMEOBJ); 
-	$end = eo_get_the_start(DATETIMEOBJ); 
-
-	if(eo_is_all_day()):
+	
+	setup_postdata( $post );	
+	
+	$start = eo_get_the_start( DATETIMEOBJ, $event_id, null, $occurrence_id );
+	$end = eo_get_the_end( DATETIMEOBJ, $event_id, null, $occurrence_id );
+	
+	if( eo_is_all_day() ):
 		$end->modify('+1 second');
 		$format = 'Ymd';
-	else:		
+	else:
 		$format = 'Ymd\THis\Z';
 		$start->setTimezone( new DateTimeZone('UTC') );
 		$end->setTimezone( new DateTimeZone('UTC') );
 	endif;
-
+	
 	$excerpt = apply_filters('the_excerpt_rss', get_the_excerpt());
-
-	$url = add_query_arg(array(
-		'text'=>get_the_title(), 
-		'dates'=>$start->format($format).'/'.$end->format($format),
-		'trp'=>false,
-		'details'=> esc_html($excerpt),
-		'sprop'=>get_bloginfo('name')
+	
+	$url = add_query_arg( array(
+			'text' => get_the_title(),
+			'dates' => $start->format($format).'/'.$end->format($format),
+			'trp' => false,
+			'details' => esc_html($excerpt),
+			'sprop' => get_bloginfo('name')
 	),'http://www.google.com/calendar/event?action=TEMPLATE');
+	
 
 	$venue_id = eo_get_venue();
-	if($venue_id):
-		$venue =eo_get_venue_name($venue_id).", ".implode(', ',eo_get_venue_address($venue_id));
-		$url = add_query_arg('location',$venue, $url);
+	if( $venue_id ):
+		$venue = eo_get_venue_name( $venue_id ) . ", " . implode( ', ', eo_get_venue_address( $venue_id ) );
+		$url = add_query_arg( 'location', $venue, $url );
 	endif;
-
+	
 	wp_reset_postdata();
 	return $url;
 }
+
 
 /**
  * @ignore
@@ -1289,7 +1324,11 @@ function eo_get_event_fullcalendar( $args ){
 	$id = count( EventOrganiser_Shortcodes::$calendars );
 
 	$html = '<div id="eo_fullcalendar_'.$id.'_loading" style="background:white;position:absolute;z-index:5" >';
-	$html .= '<img src="'.esc_url(EVENT_ORGANISER_URL.'css/images/loading-image.gif').'" style="vertical-align:middle; padding: 0px 5px 5px 0px;" />' . __( 'Loading&#8230;', 'eventorganiser' );
+	$html .= sprintf(
+				'<img src="%1$s" style="vertical-align:middle; padding: 0px 5px 5px 0px;" alt="%2$s" /> %2$s',
+				esc_url( EVENT_ORGANISER_URL . 'css/images/loading-image.gif' ),
+				esc_html__( 'Loading&#8230;', 'eventorganiser' )
+			);
 	$html .= '</div>';
 	$html .= '<div class="eo-fullcalendar eo-fullcalendar-shortcode" id="eo_fullcalendar_'.$id.'"></div>';
 

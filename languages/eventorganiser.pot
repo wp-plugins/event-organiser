@@ -243,8 +243,8 @@ msgstr ""
 msgid "Export"
 msgstr ""
 
-#: ../event-organiser-debug.php:72
-msgid "Below any <strong>known</strong> plug-in and theme conflicts are highlighted in red."
+#: ../event-organiser-debug.php:132
+msgid "PHP cURL Support"
 msgstr ""
 
 #: ../event-organiser-settings.php:34
