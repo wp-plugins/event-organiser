@@ -64,7 +64,7 @@ class EventOrganiser_Shortcodes {
 			'style' => '',
 			'category' => false,
 			'venue' => false,
-		), $atts ) );
+		), $atts, 'eo_subscribe' ) );
 		
 		if( $category ){
 			$url = eo_get_event_category_feed( $category );
@@ -102,7 +102,8 @@ class EventOrganiser_Shortcodes {
 			'tooltip'=>'true',
 			'weekends'=>'true',
 			'alldayslot'=>'true',
-			'users_events' => 'false'
+			'users_events' => 'false',
+			'theme' => 'true'
 		);
 		
 		$atts = wp_parse_args( $atts, $bool_atts );

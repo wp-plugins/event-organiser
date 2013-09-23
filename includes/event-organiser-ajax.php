@@ -166,6 +166,7 @@ function eventorganiser_public_fullcalendar() {
 			endif;
 
 			//Event colour
+			$event['textColor'] = '#ffffff'; //default text colour
 			if( eo_get_event_color() ) {
 				$event['color'] = eo_get_event_color();
 				$event['textColor'] = eo_get_event_textcolor( $event['color'] );
@@ -360,9 +361,10 @@ function eventorganiser_admin_calendar() {
 				endif;
 
 				//Event colour
+				$event['textColor'] = '#ffffff'; //default text colour
 				if( eo_get_event_color() ) {
 					$event['color'] = eo_get_event_color();
-					$event['textColor'] = eo_get_event_textcolor( $event['color'] );
+					$event['textColor'] = eo_get_event_textcolor( $event['color'] ) ? eo_get_event_textcolor( $event['color'] ) : '#ffffff';
 				}
 
 				//Event summary
@@ -612,6 +614,13 @@ function eventorganiser_admin_cal_time_format(){
 	exit();
 }
 
+/**
+ * Toggle visibility of extensionpage.
+ *
+ *@since 2.3
+ *@access private
+ *@ignore
+*/
 function eventorganiser_ajax_toggle_addon_page(){
 	
 	if( !isset( $_POST['hide_addon_page'] ) || !current_user_can( 'manage_options' ) )
