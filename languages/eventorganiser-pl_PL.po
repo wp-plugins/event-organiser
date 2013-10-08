@@ -256,7 +256,7 @@ msgstr "Anuluj"
 
 #: ../event-organiser-manage.php:26
 msgid "Categories"
-msgstr "Categorie&#235;n"
+msgstr "Kategorie"
 
 #: ../event-organiser-settings.php:235
 msgid "Check this option to prevent any stylesheets from Event Organiser being "

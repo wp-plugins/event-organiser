@@ -1227,6 +1227,52 @@ msgstr "Übersicht"
 msgid "Page list (fallback)"
 msgstr "Seitenliste (Sicherung)"
 
+#: ../event-organiser-calendar.php:191
+msgid "Occurrence deleted."
+msgstr "Vorkommen gelöscht"
+
+#: ../includes/event.php:744
+msgid "Occurrence not deleted. Occurrence not found."
+msgstr ""
+
+#: ../event-organiser-edit.php:146
+#: ../templates/shortcode-event-list.php:52
+msgid "on"
+msgstr "am"
+
+#: ../event-organiser-edit.php:126
+msgid "once"
+msgstr "einmal"
+
+#: ../includes/event-organiser-event-functions.php:703
+msgid "one time only"
+msgstr "einmalig"
+
+#: ../includes/event-organiser-cpt.php:448
+msgid "Only pre-existing venues can be selected. To add a venue, go to the venues "
+"page."
+msgstr "Nur bereits bestehenden Veranstaltungsorte können ausgewählt werden. Um "
+"einen Ort hinzuzufügen, gehen Sie zur Seite \"Veranstaltungsorte\"."
+
+#: ../classes/class-eo-event-list-widget.php:55
+msgid "Order by"
+msgstr "Sortieren nach"
+
+#: ../event-organiser-settings.php:112
+#: ../event-organiser-edit.php:31
+#: ../event-organiser-manage.php:23
+msgid "Organiser"
+msgstr "Organiser"
+
+#: ../includes/event-organiser-cpt.php:458
+#: ../includes/event-organiser-cpt.php:477
+msgid "Overview"
+msgstr "Übersicht"
+
+#: ../event-organiser-settings.php:630
+msgid "Page list (fallback)"
+msgstr "Seitenliste (Sicherung)"
+
 #: ../includes/event-organiser-cpt.php:446
 msgid "Only pre-existing venues can be selected. To add a venue, go to the venues "
 "page."
