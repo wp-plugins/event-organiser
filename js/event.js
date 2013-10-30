@@ -114,8 +114,8 @@ function eo_generate_dates_by_schedule_rule( rule, month_start,month_end ){
             	var matches = rule.schedule_meta.match(/BYDAY=(\d+)(MO|TU|WE|TH|FR|SA|SU)/);
             	var n = parseInt( matches[1], 10 ) -1;    //0=>first,1=>second,...,4=>last            	
         		var occurrence_day = rule.start.getDay(), occurence_date;
-
-        		if (n >= 5) {
+        		
+        		if (n >= 4) {
         			//Last day
         			var month_end_day = month_end.getDay();
         			occurence_date = month_end.getDate() + (occurrence_day - month_end_day - 7) % 7;
@@ -298,6 +298,7 @@ window.eventOrganiserSchedulePicker = {
             
             $('html').click(function() {
                 dp.hide();
+                $(views.occurrence_picker_toggle).val(locale.showDates);
             });
         }
 

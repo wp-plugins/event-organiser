@@ -1207,37 +1207,6 @@ msgstr "Overzicht"
 msgid "Page list (fallback)"
 msgstr ""
 
-#: ../event-organiser-settings.php:112
-#: ../event-organiser-edit.php:31
-#: ../event-organiser-manage.php:23
-msgid "Organiser"
-msgstr "Organisator"
-
-#: ../includes/event-organiser-cpt.php:458
-#: ../includes/event-organiser-cpt.php:477
-msgid "Overview"
-msgstr "Overzicht"
-
-#: ../event-organiser-settings.php:630
-msgid "Page list (fallback)"
-msgstr ""
-
-#: ../event-organiser-settings.php:96
-#: ../event-organiser-edit.php:28
-#: ../event-organiser-manage.php:22
-msgid "Organiser"
-msgstr "Organisator"
-
-#: ../includes/event-organiser-cpt.php:456
-#: ../includes/event-organiser-cpt.php:475
-msgid "Overview"
-msgstr "Overzicht"
-
-#: ../event-organiser-settings.php:554
-msgid "Page list (fallback)"
-msgstr ""
-
-#: ../includes/event-organiser-cpt.php:63
 #: ../includes/event-organiser-cpt.php:64
 #: ../includes/event-organiser-cpt.php:65
 msgid "Parent Category"

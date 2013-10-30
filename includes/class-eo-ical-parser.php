@@ -1,4 +1,7 @@
 <?php
+//TODO How does UNTIL=[DATE] as opposed to UNTIL=[DATE-TIME] affect "foreign" recurring events
+//TODO Resolve issue (1) below
+//TODO Detect issue (2) and issue error notices
 
 /**
  * Parses a local or remote ICAL file
@@ -12,6 +15,7 @@
  *      $ical->venues; //Array of venue names
  *      $ical->categories; //Array of category names
  *      $ical->errors; //Array of WP_Error errors
+ *      $ical->warnings; //Array of WP_Error 'warnings'. This are "non-fatal" errors (e.g. warnings about timezone 'guessing').
  * </code>
  * 
  * You can configire default settings by passing an array to the class constructor.
@@ -35,14 +39,20 @@ class EO_ICAL_Parser{
 	
 	var $events = array();
 	var $venues = array();
+	var $venue_meta = array();
 	var $categories = array();
+	
+	
 	var $errors = array();
+	var $warnings = array();
 
 	var $events_parsed = 0;
 	var $venue_parsed = 0;
 	var $categories_parsed = 0;
 
 	var $current_event = array();
+	
+	var $line = 0; //Current line being parsed
 
 	/**
 	 * Constructor with settings passed as arguments
@@ -86,9 +96,10 @@ class EO_ICAL_Parser{
 			$this->ical_array = $this->url_to_array( $file );
 
 		}else{
-			$this->ical_array =  WP_Error( 'invalid-ical-source', 
+			$this->ical_array =  new WP_Error( 
+				'invalid-ical-source', 
 				__( 'There was an error detecting ICAL source.', 'eventorgansier' )
-				);
+			);
 		}
 
 		if( is_wp_error( $this->ical_array ) )
@@ -175,10 +186,11 @@ class EO_ICAL_Parser{
 	protected function parse_ical_array(){
 
 		$state = "NONE";//Initial state
+		$this->line = 1;
 
 		//Read through each line
-		for ( $n = 0; $n < count ( $this->ical_array ) && empty( $this->errors ); $n++ ):
-			$buff = trim(  $this->ical_array[$n] );
+		for ( $this->line = 1; $this->line <= count ( $this->ical_array ) && empty( $this->errors ); $this->line++ ):
+			$buff = trim(  $this->ical_array[$this->line-1] );
 
 			if( !empty( $buff ) ):
 				$line = explode(':',$buff,2);
@@ -194,22 +206,31 @@ class EO_ICAL_Parser{
 					//If END:VEVENT, add event to parsed events and clear $event
 					if( $property=='END' && $value=='VEVENT' ){
 						$state = "VCALENDAR";
+						
+						//Now we've finished passing the event, move venue data to $this->venue_meta
+						if( isset( $this->current_event['geo'] ) && !empty( $this->current_event['event-venue'] ) ){
+							$venue = $this->current_event['event-venue'];
+							$this->venue_meta[$venue]['latitude'] = $this->current_event['geo']['lat'];
+							$this->venue_meta[$venue]['longtitude'] = $this->current_event['geo']['lng'];
+							unset( $this->current_event['geo'] );
+						}
+						
 						$this->events[] = $this->current_event;
 						$this->current_event = array();
 
 					//Otherwise, parse event property
 					}else{
 						try{
-							while( isset( $this->ical_array[$n+1] ) && $this->ical_array[$n+1][0] == ' ' ){
+							while( isset( $this->ical_array[$this->line] ) && $this->ical_array[$this->line-1][0] == ' ' ){
 								//Remove initial white space {@link http://www.ietf.org/rfc/rfc2445.txt Section 4.1}
-								$value .= substr( $this->ical_array[$n+1], 1 );
-								$n++;
+								$value .= substr( $this->ical_array[$this->line-1], 1 );
+								$this->line++;
 							}
 						
 							$this->parse_event_property( $property, $value, $modifiers );
 
 						}catch( Exception $e ){
-							$this->report_error( $n+1, 'event-property-error', $e->getMessage() );
+							$this->report_error( $this->line, 'event-property-error', $e->getMessage() );
 							$state = "VCALENDAR";//Abort parsing event
 						}
 					}
@@ -226,12 +247,7 @@ class EO_ICAL_Parser{
 						$state = "NONE";
 		
 					}elseif($property=='X-WR-TIMEZONE'){
-						try{
-							$this->calendar_timezone = $this->parse_timezone($value);
-						}catch(Exception $e){
-							$this->report_error( $n+1, 'timezone-parser-error', $e->getMessage() );
-							break;
-						}
+						$this->calendar_timezone = $this->parse_timezone($value);
 					}
 
 				//Other
@@ -254,7 +270,24 @@ class EO_ICAL_Parser{
 
 		$this->errors[] = new WP_Error(
 				$type,
-				sprintf( __( 'Line: %1$d', 'eventorganiser' ), $line ).'   '.$message
+				sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
+				array( 'line' => $line )
+		);
+	}
+	
+	/**
+	 * Report an warnings with an iCal file
+	 * @ignore
+	 * @param int $line The line on which the error occurs.
+	 * @param string $type The type of error
+	 * @param string $message Verbose error message
+	 */
+	protected function report_warning( $line, $type, $message ){
+	
+		$this->warnings[] = new WP_Error(
+				$type,
+				sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
+				array( 'line' => $line )
 		);
 	}
 
@@ -267,6 +300,7 @@ class EO_ICAL_Parser{
 		if( !empty( $modifiers ) ):
 			foreach( $modifiers as $modifier ):
 				if ( stristr( $modifier, 'TZID' ) ){
+			
 					$date_tz = $this->parse_timezone( substr( $modifier, 5 ) );
 
 				}elseif( stristr( $modifier, 'VALUE' ) ){
@@ -389,11 +423,20 @@ class EO_ICAL_Parser{
 			$this->current_event['post_status'] = isset( $map[$value] ) ? $map[$value] : $this->default_status;
 		break;
 
-			//An url associated with the event
+		case 'GEO':
+			$lat_lng = array_map( 'floatval', explode( ';', $value ) );
+			if( count( $lat_lng ) === 2 ){
+				$keys = array( 'lat', 'lng' );
+				$this->current_event['geo'] = array_combine( $keys, $lat_lng );
+			}
+		break;
+			
+		//An url associated with the event
 		case 'URL':
 			$this->current_event['url'] = $value;
 		break;
 
+		
 			endswitch;
 
 	}
@@ -428,12 +471,103 @@ class EO_ICAL_Parser{
 	 * @param string $tzid - the value of the ICAL TZID property
 	 * @return DateTimeZone - the timezone with the given identifier or false if it isn't recognised
 	 */
-	protected function parse_timezone( $tzid ){
+	public function parse_timezone( $tzid ){
+		
 		$tzid = str_replace( '-', '/', $tzid );
-		$tz = new DateTimeZone( $tzid );
+		$tzid = trim( $tzid, '\'"' );
+
+		//Try just using the passed timezone ID
+		try{
+			$tz = new DateTimeZone( $tzid );
+		}catch( exception $e ){
+			$tz = null;
+		}
+
+		//If we have something like (GMT+01.00) Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna lets try the cities
+		if( is_null( $tz ) && preg_match( '/GMT(?P<offset>.+)\)(?P<cities>.+)?/', $tzid, $matches ) ){
+			
+			if( $matches['cities'] ){
+				$parts = explode( '/', $matches['cities'] );
+				$tz_cities = array_map( 'trim', $parts );
+				$identifiers = timezone_identifiers_list();
+			
+				foreach( $tz_cities as $tz_city ){
+			
+					$tz_city = ucfirst( strtolower( $tz_city ) );
+			
+					foreach( $identifiers as $identifier ){
+			
+						$parts = explode('/', $identifier );
+						$city = array_pop( $parts );
+							
+						if( $city != $tz_city )
+							continue;
+			
+						try{
+							$tz = new DateTimeZone( $identifier );
+							break 2;
+						}catch( exception $e ){
+							$tz = null;
+						}
+					}
+				}
+			}
+			
+			if( $tz == null && $matches['offset'] ){
+				
+				$offset = (int) str_replace( '/', '-',  trim( $matches['offset'] ) );
+				
+				if( $offset == 0 ){
+					$tz = new DateTimeZone( 'UTC' );
+				}else{
+					$offset *= 3600; // convert hour offset to seconds
+					$allowed_zones = timezone_abbreviations_list();
+
+					foreach ( $allowed_zones as $abbr ):
+						foreach ( $abbr as $city ):
+							if ( $city['offset'] == $offset ){
+								try{
+									$tz = new DateTimeZone( $city['timezone_id'] );
+									break 2;
+								}catch( exception $e ){
+									$tz = null;
+								}
+							}
+						endforeach;
+					endforeach;
+				}
+			}
+		}	
+		
+		//If we have something like /mozilla.org/20070129_1/Europe/Berlin
+		if( is_null( $tz ) && preg_match( '#(/?)mozilla.org/([\d_]+)/(?P<tzid>.+)#', $tzid, $matches ) ){
+			try{
+				$tz = new DateTimeZone( $matches['tzid'] );
+			}catch( exception $e ){
+				$tz = null;
+			}
+		}
+
+		//Let plugins over-ride this
+		$tz = apply_filters( 'eventorganiser_ical_timezone', $tz, $tzid );
+		
+		if ( ! ($tz instanceof DateTimeZone ) ) {
+			$tz = eo_get_blog_timezone();
+		}
+		
+		if( $tz->getName() != $tzid ){
+			$this->report_warning( 
+				$this->line, 
+				'timezone-parser-warning', 
+				sprintf( 'Unknown timezone "%s" interpreted as "%s".', $tzid, $tz->getName() )
+			);
+		}
+		
 		return $tz;
 	}
 
+
+	
 	/**
 	 * Takes a date in ICAL and returns a datetime object
 	 * 
@@ -447,10 +581,15 @@ class EO_ICAL_Parser{
 		preg_match('/^(\d{8})*/', $ical_date, $matches);
 
 		if( count( $matches ) !=2 ){
-			throw new Exception(__('Invalid date. Date expected in YYYYMMDD format.','eventorganiser'));
+			throw new Exception(
+				sprintf(
+					__( 'Invalid date "%s". Date expected in YYYYMMDD format.', 'eventorganiser' ),
+					$ical_date
+				));
 		}
 
-		$datetime = new DateTime( $matches[1], $this->calendar_timezone );
+		//No time is given, so ignore timezone. (So use blog timezone).
+		$datetime = new DateTime( $matches[1], eo_get_blog_timezone() );
 
 		return $datetime;
 	}
@@ -480,7 +619,11 @@ class EO_ICAL_Parser{
 			$tz = new DateTimeZone('UTC');
 
 		}else{
-			throw new Exception(__('Invalid datetime. Date expected in YYYYMMDDTHHiissZ or YYYYMMDDTHHiiss format.','eventorganiser'));
+			throw new Exception(
+					sprintf(
+						__( 'Invalid datetime "%s". Date expected in YYYYMMDDTHHiissZ or YYYYMMDDTHHiiss format.', 'eventorganiser' ),
+						$ical_date
+					));
 			return false;
 		}
 
@@ -508,56 +651,130 @@ class EO_ICAL_Parser{
 		$property = $prop_value[0];
 		$value = $prop_value[1];
 
-		switch($property):
-		case 'FREQ':
-			$rule_array['schedule'] =strtolower($value);
-		break;
-
-		case 'INTERVAL':
-			$rule_array['frequency'] =intval($value);
+		switch( $property ):
+			case 'FREQ':
+				$rule_array['schedule'] =strtolower($value);
 			break;
 
-		case 'UNTIL':
-			//Is the scheduled end a date-time or just a date?
-			if(preg_match('/^((\d{8}T\d{6})(Z)?)/', $value))
-				$date = $this->parse_ical_datetime( $value, new DateTimeZone('UTC') );
-			else
-				$date = $this->parse_ical_date( $value );
+			case 'INTERVAL':
+				$rule_array['frequency'] =intval($value);
+			break;
+
+			case 'UNTIL':
+				//Is the scheduled end a date-time or just a date?
+				if(preg_match('/^((\d{8}T\d{6})(Z)?)/', $value))
+					$date = $this->parse_ical_datetime( $value, new DateTimeZone('UTC') );
+				else
+					$date = $this->parse_ical_date( $value );
 			
-			$rule_array['schedule_last'] = $date;
+				$rule_array['schedule_last'] = $date;
+			break;
+			
+			case 'COUNT':
+				$rule_array['number_occurrences'] = absint( $value );
 			break;
 
-		case 'BYDAY':
-			$byday = $value;
+			case 'BYDAY':
+				$byday = $value;
 			break;
 
-		case 'BYMONTHDAY':
-			$bymonthday = $value;
+			case 'BYMONTHDAY':
+				$bymonthday = $value;
+			break;
+			
+			//Not supported with warning
+			case 'BYSECOND':
+			case 'BYMINUTE':
+			case 'BYHOUR':
+			case 'BYYEARDAY':
+			case 'BYWEEKNO':
+			case 'BYSETPOS':
+				$this->report_warning(
+						$this->line,
+						'unsupported-recurrence-rule',
+						sprintf(
+							'Feed contains unrecognised recurrence rule: "%s" and may have not been imported correctly.',
+							 $property 
+						)
+				);
+			break;
+			
+			//Not supported without warning
+			case 'WKST':
 			break;
 			endswitch;
 
-			endforeach;
+		endforeach;
 
-			//Meta-data for Weekly and Monthly schedules
-			if($rule_array['schedule']=='monthly'):
-			if(isset($byday)){
-				preg_match('/(\d+)([a-zA-Z]+)/', $byday, $matches);
-				$rule_array['schedule_meta'] ='BYDAY='.$matches[1].$matches[2];
+		//Meta-data for Weekly and Monthly schedules
+		if( $rule_array['schedule']=='monthly' ):
+			
+			if( isset( $byday ) ){
+				preg_match_all('/(-?\d+)([a-zA-Z]+)/', $byday, $matches);
+				
+				if ( count( $matches[0] ) > 1 ){
+					$this->report_warning(
+						$this->line,
+						'unsupported-recurrence-rule',
+						sprintf(
+							'Feed contains unsupported value for "%s" and may have not been imported correctly.',
+							 $property 
+						)
+					);
+				}
+				
+				$rule_array['schedule_meta'] ='BYDAY='.$matches[0][0];
 
-			}elseif(isset($bymonthday)){
-				$rule_array['schedule_meta'] ='BYMONTHDAY='.$bymonthday;
+			}elseif( isset( $bymonthday ) ){
+				
+				$days = explode( ',', $bymonthday );
+				
+				if ( count( $days ) > 1 ){
+					$this->report_warning(
+							$this->line,
+							'unsupported-recurrence-rule',
+							sprintf(
+									'Feed contains unsupported value for "%s" and may have not been imported correctly.',
+									$property
+							)
+					);
+				}
+				
+				$rule_array['schedule_meta'] ='BYMONTHDAY='.$days[0];
 
 			}else{
 				throw new Exception('Incomplete scheduling information');
 			}
 
-			elseif($rule_array['schedule']=='weekly'):
-			preg_match('/([a-zA-Z,]+)/', $byday, $matches);
-			$rule_array['schedule_meta'] =explode(',',$matches[1]);
+		elseif( $rule_array['schedule'] == 'weekly' ):
+			preg_match( '/([a-zA-Z,]+)/', $byday, $matches );
+			$rule_array['schedule_meta'] = explode(',',$matches[1]);
 
-			endif;
+		endif;
 
-			return $rule_array;
+		//If importing indefinately recurring, recurr up to some large point in time.
+		//TODO make a log of this somewhere.
+		if( empty( $rule_array['schedule_last'] ) && empty( $rule_array['number_occurrences'] ) ){
+			$rule_array['schedule_last'] = new DateTime( '2038-01-19 00:00:00' );
+			
+			$this->report_warning(
+				$this->line,
+				'indefinitely-recurring-event',
+				"Feed contained an indefinitely recurring event. This event will recurr until 2038-01-19."
+			);
+		}
+		
+		return $rule_array;
 	}
 
 }
+
+/*
+ *  * Known issue (1): recurrence is sometimes not translated properly across timezones.
+ *  - ICAL has event recurring every month on the 2nd at 02:00 (2am) UTC time.
+ *  - Importing blog has New York Time Zone (UTC -4/5).
+ *  - Then event recurs every month on the **1st** at 22:00 (10pm) New York Time
+ *  - The **2nd** is not corrected to **1st**.
+ *  
+ *  * Known issue (2): cannot import events with a recurrence schedule EO doesn't understand.
+ */

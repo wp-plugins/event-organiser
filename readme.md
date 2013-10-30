@@ -3,8 +3,8 @@
 **Donate link:** http://www.wp-event-organiser.com/donate  
 **Tags:** events, event, event categories, event organizer, events calendar, event management, ical, locations, google map, widget, venues, maps, gigs, shows,  
 **Requires at least:** 3.3  
-**Tested up to:** 3.6.1  
-**Stable tag:** 2.3.2  
+**Tested up to:** 3.7.1  
+**Stable tag:** 2.4  
 **License:** GPLv3  
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
@@ -201,6 +201,28 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 
 ## Changelog ##
 
+### 2.4 ###
+* iCal parser updated. Specifically:
+ - Improved timezone handling
+ - Support for 'COUNT' property
+ - Improved error & warning feedback
+ - Handle GEO tag
+ - Import venue latitude/longtitude
+* Themes can switch off plug-in template handling from functions.php with `add_theme_support( 'event-organiser' )`
+* Added support for `event_occurrence__not_in` in `eo_get_events()` and `WP_Query()`
+* Improved MP6 compatability
+* Add filter `eventorganiser_blog_is_24` (determines whether time-input should be 12 hour or 24 hour).
+* Schedule meta for weekly schedule now optional (defaults to 'start' date)
+* Unit tests added (largely for date generation & iCal parsing/generation)
+* Fixes venues not appearing in Appearance > Menus 
+* Fixes bug with importing events that have no dates
+* Fixes bug with importing all-day events across timezones
+* Fixes bug with occurrence picker
+* Fixes bug with modal overlay
+* Code refactoring (old iCal parser removed)
+* Updated translations: Arabic, Czech, Danish, German, Greek, Persian, 
+* Added translations: Indonesian
+
 ### 2.3.2 ###
 * Fixes bug (introduced in 2.3) with iCal export feed.
 * Fixes conflict with Easy Content Types
@@ -219,8 +241,8 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 * Adds option to disable front-end stylesheets
 * Set event text colour (fullCalendar) according to event colour. Thanks to @mperry2. [See #108](https://github.com/stephenharris/Event-Organiser/pull/#108).
 * Adds data attributes to widget calendar
-*** Added translations:** Arabic, Spanish (Peru), Persian, Slovakian, Slovenian  
-*** Updated translations:** Czech, German, Dutch, Portuguese (Portugal), Turkish, Ukrainian, Chinese  
+* Added translations: Arabic, Spanish (Peru), Persian, Slovakian, Slovenian
+* Updated translations: Czech, German, Dutch, Portuguese (Portugal), Turkish, Ukrainian, Chinese
 * Checked compatability with 3.6.1
 * Deprecated `eo_get_the_GoogleLink()` in favour of `eo_get_add_to_google_link()`. Fixes bugs.
 * Fixes bug with quick edit (venue disappearing)
@@ -252,7 +274,7 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 * Adds `eo_get_event_category_feed()` and `eo_get_event_venue_feed()` functions. See [docs](http://codex.wp-event-organiser.com).
 * Fixes errors with "Organiser" metabox.  [#106](https://github.com/stephenharris/Event-Organiser/pull/106)
 * Fixes bug with `eo_get_event_classes()` function
-*** Added 'show long events' otion for widget calendar:** Show all days of events spanning multiple days on the widget calendar, not just the first.  
+* Added 'show long events' otion for widget calendar: Show all days of events spanning multiple days on the widget calendar, not just the first.
 * Added 'link to single event' option for widget calendar. If a day has only one event, link directly to that event, not the day archive.###
 * Fixes conflict with Yoast SEO plug-in ( http://wordpress.org/support/topic/events-are-missing-information?replies=6 )
 * Fixes colours not appearing on admin calendar drop-down [#109](https://github.com/stephenharris/Event-Organiser/pull/109)
@@ -422,9 +444,9 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 * 'Under the hood' improvements
 * Improved documentation & source-code comments
 * More tags for shortcode & event list widget template - [see this page](http://wp-event-organiser.com/documentation/shortcodes/event-list-shortcode/)
-*** Extra hooks available, see:** http://wp-event-organiser.com/documentation/developers/hooks/  
+* Extra hooks available, see: http://wp-event-organiser.com/documentation/developers/hooks/
 * Various bug fixes and major code refactoring (especially of javascript).
-*** Improved default location for venues:** https://github.com/stephenh1988/Event-Organiser/issues/3  
+* Improved default location for venues: https://github.com/stephenh1988/Event-Organiser/issues/3
 
 A special thanks to **kuemerle** and **csaba-erdei**.
 
@@ -489,7 +511,7 @@ A special thanks to **kuemerle** and **csaba-erdei**.
 * Fixes a weekly schedule bug, occurs for some users.
 
 ### 1.4 ###
-*** A big update:** venue address data migrated to new venue meta table  
+* A big update: venue address data migrated to new venue meta table
 * Introduces support for venue meta data and custom metaboxes (see )
 * Improved venue admin page UI
 
@@ -510,7 +532,7 @@ A special thanks to **kuemerle** and **csaba-erdei**.
 
 ### 1.3.3 ###
 * Added 'no events' option for event list widget
-*** Added template tags for widget/shortcode:** `%cat_color%` and `%event_excerpt%`  
+* Added template tags for widget/shortcode: `%cat_color%` and `%event_excerpt%`
 * Added hook `eventorganiser_calendar_event_link` to alter full calendar event link
 * Added `eo_has_event_started`, `eo_has_event_finished`, `eo_event_color`,`eo_get_blog_timezone` functions
 * Fixed the following bugs
@@ -589,7 +611,7 @@ A special thanks to **kuemerle** and **csaba-erdei**.
 * Option to decide when event is past
 * Show all occurrences of an event or 'group occurrences'
 * Improved user-interface
-*** Added template functions:** `eo_get_the_occurrences`, `eo_get_the_venues`, `eo_event_venue_dropdown`, `eo_event_category_dropdown`, `eo_is_allday`, `eo_get_the_GoogleLink`, `eo_get_events_feed`. See [template functions documentation](http://www.harriswebsolutions.co.uk/event-organiser/documentation/function-reference/)  
+* Added template functions: `eo_get_the_occurrences`, `eo_get_the_venues`, `eo_event_venue_dropdown`, `eo_event_category_dropdown`, `eo_is_allday`, `eo_get_the_GoogleLink`, `eo_get_events_feed`. See [template functions documentation](http://www.harriswebsolutions.co.uk/event-organiser/documentation/function-reference/)
 * Localisation (currently translations for French and Portugese (Brazil) are included)
 * Improved default templates
 * Fixed bugs [reported here](http://www.harriswebsolutions.co.uk/event-organiser/forums/forum/bugs/)

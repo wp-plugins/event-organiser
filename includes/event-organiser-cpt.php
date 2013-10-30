@@ -26,7 +26,7 @@ function eventorganiser_create_event_taxonomies() {
 
 	$venue_labels = array(
 		'name' => __( 'Event Venues','eventorganiser' ),
-    	'singular_name' => _x( 'Venues', 'taxonomy singular name' ),
+    	'singular_name' => _x( 'Venue', 'taxonomy singular name', 'eventorganiser' ),
     	'search_items' =>  __( 'Search Venues', 'eventorganiser' ),
     	'all_items' => __( 'All Venues', 'eventorganiser' ),
 		'view_item' => __( 'View Venue', 'eventorganiser' ),
@@ -43,7 +43,7 @@ function eventorganiser_create_event_taxonomies() {
 		'hierarchical' => false,
 		'labels' => $venue_labels,
 		'public'=> true,
-		'show_in_nav_menus'=>false,
+		'show_in_nav_menus'=>true,
 		'show_ui' => false,//Use custom UI
 		'update_count_callback' => '_update_post_term_count',
 		'query_var' => true,
@@ -191,7 +191,7 @@ $args = array(
 	),
 	'has_archive' => $events_slug, 
 	'hierarchical' => false,
-	'menu_icon' => EVENT_ORGANISER_URL.'css/images/eoicon-16.png',
+	'menu_icon' => ( defined( 'MP6' ) && MP6 ? false : EVENT_ORGANISER_URL.'css/images/eoicon-16.png' ),
 	'menu_position' => apply_filters('eventorganiser_menu_position',5),
 	'supports' => eventorganiser_get_option('supports'),
   ); 
