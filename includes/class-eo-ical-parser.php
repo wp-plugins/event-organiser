@@ -53,6 +53,10 @@ class EO_ICAL_Parser{
 	var $current_event = array();
 	
 	var $line = 0; //Current line being parsed
+	
+	var $state = "NONE";
+	
+	var $parse_html = true; //If description is given in HTML, try to use that.
 
 	/**
 	 * Constructor with settings passed as arguments
@@ -68,14 +72,18 @@ class EO_ICAL_Parser{
 						'CANCELLED' => 'trash',
 						'TENTATIVE' => 'draft',
 					),
-					'default_status' => 'draft',		
+					'default_status' => 'draft',
+					'parse_html' => true,
 				), $args );
 		
-
+		$args = apply_filters_ref_array( 'eventorganiser_ical_parser_args', array( $args, &$this ) );
+		
 		$this->calendar_timezone = eo_get_blog_timezone();
 		
 		$this->default_status = $args['default_status'];
 		$this->status_map = $args['status_map'];
+		$this->parse_html = $args['parse_html'];
+		
 	}
 
 
@@ -104,10 +112,23 @@ class EO_ICAL_Parser{
 
 		if( is_wp_error( $this->ical_array ) )
 			return $this->ical_array;
+		
+		if( empty( $this->ical_array ) ){
+			return new WP_Error( 'unable-to-fetch',
+					sprintf(
+							'%s. Response code: %s.',
+							wp_remote_retrieve_response_message( $response ),
+							$response_code
+					));
+		}
 
 		//Go through array and parse events
 		$result = $this->parse_ical_array();
-
+		
+		if( "NONE" == $this->state ){
+			return new WP_Error( 'unable-to-fetch', 'Feed not found' );
+		}
+		
 		$this->events_parsed = count( $this->events );
 		$this->venue_parsed = count( $this->venues );
 		$this->categories_parsed = count( $this->categories );
@@ -178,6 +199,35 @@ class EO_ICAL_Parser{
 		return $lines;
 	}
 
+	/**
+	 * Modifies the ical_array to unfold multi-line entries into a single line. 
+	 * Preserves the original line numbering so that line numbers in error messages
+	 * match up with the line numbers when viewing the (unfolded) iCal file in a 
+	 * text editor.  
+	 */
+	function unfold_lines( $lines ) {
+		
+		$unfolded_lines = array();
+
+		$i = 0;
+		
+		while( $i < count ( $lines ) ) {
+			
+			$unfolded_lines[$i] = rtrim( $lines[$i], "\n\r" );
+			
+			$j = $i+1;
+			
+			while( isset( $lines[$j] ) && strlen( $lines[$j] ) > 0 && ( $lines[$j]{0} == ' ' || $lines[$j]{0} == "\t" )) {
+				$unfolded_lines[$i] .= rtrim( substr( $lines[$j], 1 ), "\n\r" );
+				$j++;
+			}
+			
+			$i = ($j-1) + 1;
+		}
+		
+		return $unfolded_lines;
+	}
+	
 
 	/**
 	 * Parses through an array of lines (of an ICAL file)
@@ -185,12 +235,19 @@ class EO_ICAL_Parser{
 	 */
 	protected function parse_ical_array(){
 
-		$state = "NONE";//Initial state
+		$this->ical_array = $this->unfold_lines( $this->ical_array );
+		
+		$this->state = "NONE";//Initial state
 		$this->line = 1;
 
 		//Read through each line
-		for ( $this->line = 1; $this->line <= count ( $this->ical_array ) && empty( $this->errors ); $this->line++ ):
-			$buff = trim(  $this->ical_array[$this->line-1] );
+		foreach ( $this->ical_array as $index => $line_content ):
+		
+			if( !empty( $this->errors ) )
+				break;
+		
+			$this->line = $index + 1;
+			$buff = trim( $line_content );
 
 			if( !empty( $buff ) ):
 				$line = explode(':',$buff,2);
@@ -201,11 +258,18 @@ class EO_ICAL_Parser{
 				$value = ( isset( $line[1] ) ? trim( $line[1] ) : '' );
 
 				//If we are in EVENT state
-				if ( $state == "VEVENT" ) {
-
+				if ( $this->state == "VEVENT" ) {
+					
+					if( $property == "BEGIN" && $value == 'VALARM' ){
+						//In state VEVENT > VALARM
+						$this->state = "VEVENT:VALARM";
+						
+						
 					//If END:VEVENT, add event to parsed events and clear $event
-					if( $property=='END' && $value=='VEVENT' ){
-						$state = "VCALENDAR";
+					}elseif( $property == 'END' && $value =='VEVENT' ){
+						$this->state = "VCALENDAR";
+						
+						$this->current_event['_lines']['end'] = $this->line;
 						
 						//Now we've finished passing the event, move venue data to $this->venue_meta
 						if( isset( $this->current_event['geo'] ) && !empty( $this->current_event['event-venue'] ) ){
@@ -213,6 +277,15 @@ class EO_ICAL_Parser{
 							$this->venue_meta[$venue]['latitude'] = $this->current_event['geo']['lat'];
 							$this->venue_meta[$venue]['longtitude'] = $this->current_event['geo']['lng'];
 							unset( $this->current_event['geo'] );
+						}
+						
+						if( empty( $this->current_event['uid'] ) ){
+							//var_dump( $this->current_event['_lines'] );
+							$this->report_warning( 
+									$this->current_event['_lines'], 
+									'event-no-uid',
+									"Event does not have a unique identifier (UID) property."
+							);
 						}
 						
 						$this->events[] = $this->current_event;
@@ -231,31 +304,40 @@ class EO_ICAL_Parser{
 
 						}catch( Exception $e ){
 							$this->report_error( $this->line, 'event-property-error', $e->getMessage() );
-							$state = "VCALENDAR";//Abort parsing event
+							$this->state = "VCALENDAR";//Abort parsing event
 						}
 					}
 
+					
+				//We are in a VEVENT > VALARM stte
+				}elseif( $this->state == "VEVENT:VALARM" ){
+					
+					//We ignore VALARMs...
+					if ( $property=='END' && $value=='VALARM')
+						$this->state = "VEVENT";
+					
+					
 				// If we are in CALENDAR state
-				}elseif ($state == "VCALENDAR") {
+				}elseif ($this->state == "VCALENDAR") {
 
 					//Begin event
 					if( $property=='BEGIN' && $value=='VEVENT'){
-						$state = "VEVENT";
-						$this->current_event = array();
+						$this->state = "VEVENT";
+						$this->current_event = array( '_lines' => array( 'start' => $this->line ) );
 
 					}elseif ( $property=='END' && $value=='VCALENDAR'){
-						$state = "NONE";
+						$this->state = "ENDCALENDAR";
 		
 					}elseif($property=='X-WR-TIMEZONE'){
 						$this->calendar_timezone = $this->parse_timezone($value);
 					}
 
 				//Other
-				}elseif($state == "NONE" && $property=='BEGIN' && $value=='VCALENDAR') {
-					$state = "VCALENDAR";
+				}elseif($this->state == "NONE" && $property=='BEGIN' && $value=='VCALENDAR') {
+					$this->state = "VCALENDAR";
 				}
 			endif; //If line is not empty
-		endfor; //For each line
+		endforeach; //For each line
 	}
 
 
@@ -268,11 +350,20 @@ class EO_ICAL_Parser{
 	 */
 	protected function report_error( $line, $type, $message ){
 
-		$this->errors[] = new WP_Error(
+		if( is_array( $line ) ){
+			$this->errors[] = new WP_Error(
 				$type,
-				sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
+				sprintf( __( '[Lines %1$d-%2$d]', 'eventorganiser' ), $line['start'], $line['end'] ).' '.$message,
 				array( 'line' => $line )
-		);
+			);
+			
+		}else{
+			$this->errors[] = new WP_Error(
+					$type,
+					sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
+					array( 'line' => $line )
+			);
+		}
 	}
 	
 	/**
@@ -284,11 +375,20 @@ class EO_ICAL_Parser{
 	 */
 	protected function report_warning( $line, $type, $message ){
 	
-		$this->warnings[] = new WP_Error(
-				$type,
-				sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
-				array( 'line' => $line )
-		);
+		if( is_array( $line ) ){
+			$this->warnings[] = new WP_Error(
+					$type,
+					sprintf( __( '[Lines %1$d-%2$d]', 'eventorganiser' ), $line['start'], $line['end'] ).' '.$message,
+					array( 'line' => $line )
+			);
+				
+		}else{
+			$this->warnings[] = new WP_Error(
+					$type,
+					sprintf( __( '[Line %1$d]', 'eventorganiser' ), $line ).' '.$message,
+					array( 'line' => $line )
+			);
+		}
 	}
 
 
@@ -381,9 +481,17 @@ class EO_ICAL_Parser{
 
 			//The event's description (AKA post content)
 		case 'DESCRIPTION':
-			$this->current_event['post_content'] = $this->parse_ical_text( $value );
+			if( !isset( $this->current_event['post_content'] ) )
+				$this->current_event['post_content'] = $this->parse_ical_text( $value );
 		break;
-
+		
+			//Description, in alternative format
+		case 'X-ALT-DESC':
+			if( $this->parse_html && !empty( $modifiers[0] ) && in_array( $modifiers[0], array( "FMTTYPE=text/html", "ALTREP=text/html" ) ) ){
+				$this->current_event['post_content'] = $this->parse_ical_html( $value );
+			}
+		break;
+		
 			//Event venues, assign to existing venue - or if set, create new one
 		case 'LOCATION':
 			if( !empty( $value ) ):
@@ -441,6 +549,16 @@ class EO_ICAL_Parser{
 
 	}
 
+	protected function parse_ical_html( $text ){
+		
+		$text = $this->parse_ical_text( $text );
+		
+		if( preg_match( "/<body>(.+)<\/body>/i", $text, $matches ) ){
+			$text = $matches[1];
+		}
+		
+		return $text;
+	}
 
 	/**
 	 * Takes escaped text and returns the text unescaped.

@@ -57,6 +57,9 @@ function eventorganiser_register_script() {
 				'gotodate'=>__('go to date','eventorganiser'),
 				'cat'=>__('View all categories','eventorganiser'),
 				'venue'=>__('View all venues','eventorganiser'),
+				//Allow themes to over-ride juqery ui styling and not use images
+				'nextText' => '>',
+				'prevText' => '<'
 				)
 			));
 
@@ -440,6 +443,34 @@ function eventorganiser_screen_retina_icon(){
 			body.event_page_calendar #calendar-view .view-button.active{ border-color: #dfdfdf #dfdfdf #eee }
 			.ui-datepicker select {height: 2em;}
 			.form-table .ui-datepicker-calendar td, .form-table .ui-datepicker-calendar th {font-size: 12px;}
+			#eventorganiser_event_detail td{ border: none; }
+			#eventorganiser_event_detail .reocurrence_row td{ padding: 0px; }
+			#eventorganiser_event_detail .reocurrence_row p{ margin-bottom: 18px; }
+			#eo_admin_calendar tbody th,
+			#eo_admin_calendar thead th {
+				background: #DFDFDF!important;
+				padding: 5px 0px!important;
+			}
+			#eo-event-venue-button,
+			#eo-event-cat-button,
+			.fc-header-goto button,
+			.fc-button{
+				background:white!important;
+			}	
+			.eo-addon{ background: white; }
+			#eo-event-venue-button:hover,
+			#eo-event-cat-button:hover,
+			.fc-header-goto button:hover,
+			.fc-button:hover{
+				color:#0074A2;
+			}
+			#eo-event-cat-menu .ui-widget-content .ui-state-hover,
+			#eo-event-cat-menu .ui-state-hover,
+			#eo-event-venue-menu .ui-widget-content .ui-state-hover,
+			#eo-event-venue-menu .ui-state-hover{
+				background: #EEE;
+			}
+			.fc-button-prev .ui-button-text, .fc-button-next .ui-button-text {padding-top: 0.5em!important;}
 		</style>
 		<?php
 	}
