@@ -132,11 +132,12 @@ $.widget("ui.combobox", {
 		};
 
 		//Add new / selec buttons
+		var button_height = eventorganiser.is_mp6 ? '27px' : '21px';
 		var button_wrappers = $("<span>").addClass("eo-venue-combobox-buttons").appendTo(wrapper);
-		$("<a style='vertical-align: top;margin: 0px -1px;padding: 0px;height: 21px;'>").attr("title", "Show All Items").appendTo(button_wrappers).button({
+		$("<a style='vertical-align: top;margin: 0px -1px;padding: 0px;height:"+button_height+";'>").attr("title", "Show All Items").appendTo(button_wrappers).button({
 			icons: { primary: "ui-icon-triangle-1-s"},
 			text: false
-		}).removeClass("ui-corner-all").addClass("ui-corner-right ui-combobox-toggle ui-combobox-button").click(function () {
+		}).removeClass("ui-corner-all").addClass("eo-ui-button ui-corner-right ui-combobox-toggle ui-combobox-button").click(function () {
 			if (input.autocomplete("widget").is(":visible")) {input.autocomplete("close");return;}
 			$(this).blur();
 			input.autocomplete("search", "").focus();
@@ -144,10 +145,10 @@ $.widget("ui.combobox", {
 
 		if( 'event' == pagenow && EO_Ajax_Event.current_user_can.manage_venues ){
 			//Only add this on event edit page - i.e. not on calendar page.
-			$("<a style='vertical-align: top;margin: 0px -1px;padding: 0px;height: 21px;'>").attr("title", "Create New Venue").appendTo(button_wrappers).button({
+			$("<a style='vertical-align: top;margin: 0px -1px;padding: 0px;height:"+button_height+";'>").attr("title", "Create New Venue").appendTo(button_wrappers).button({
 				icons: {primary: "ui-icon-plus"},
 				text: false
-			}).removeClass("ui-corner-all").addClass("ui-corner-right add-new-venue ui-combobox-button").click(function () {
+			}).removeClass("ui-corner-all").addClass("eo-ui-button ui-corner-right add-new-venue ui-combobox-button").click(function () {
 				$("#eventorganiser_event_detail tr.eo-add-new-venue").show();			
 				$("tr.venue_row").show();
 				//Store existing venue details in case the user cancels creating a new on

@@ -3,8 +3,8 @@ Contributors: stephenharris
 Donate link: http://www.wp-event-organiser.com/donate
 Tags: events, event, event categories, event organizer, events calendar, event management, ical, locations, google map, widget, venues, maps, gigs, shows,
 Requires at least: 3.3
-Tested up to: 3.7.1
-Stable tag: 2.5.1
+Tested up to: 3.8-rc-1
+Stable tag: 2.6
 License: GPLv3
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
@@ -92,6 +92,7 @@ A big thank you to those who have provided translations for Event Organiser. If 
 * Turkish - Gökhan DAMGACI 
 * Croatian - Branimir
 * Catalan - jordioniric, marc.antje
+* Icelandic - HrHagedorn
 
 
 == Installation ==
@@ -190,6 +191,16 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 6. View of a venue page on the front-end (in a theme based on WordPress TwentyEleven)
 
 == Changelog ==
+
+= 2.6 =
+* WordPress 3.8 compatible (tested against RC1)
+* Fixes bug with iCal feed & weekly recurring events where the day is different in UTC timezone
+* Added support for RTL for admin & front-end calendars
+* Corrected / added missing text domains
+* Fix label of venues widget
+* Set unique cache key per use in admin calendar
+* Bokmål (Norway), Catalan, French, Italian, Portuguese (Brazil), Spanish translations updated,
+* Icelandic translation added, thanks to HrHagedorn.
 
 = 2.5.1 =
 * Fix js error (variable not defined) introduced in 2.5.
