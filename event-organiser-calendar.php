@@ -47,6 +47,7 @@ class EventOrganiser_Calendar_Page extends EventOrganiser_Admin_Page
 			'categories' => get_terms( 'event-category', array( 'hide_empty' => 0 ) ),
 			'venues' => get_terms( 'event-venue', array( 'hide_empty' => 0 ) ),
 			'locale' => array(
+				'isrtl' => $wp_locale->is_rtl(),
 				'monthNames' => array_values( $wp_locale->month ),
 				'monthAbbrev' => array_values( $wp_locale->month_abbrev ),
 				'dayNames' => array_values( $wp_locale->weekday ),
@@ -229,7 +230,7 @@ class EventOrganiser_Calendar_Page extends EventOrganiser_Admin_Page
 			$views   = array( 'agendaDay' => __( 'Day', 'eventorganiser' ), 'agendaWeek' => __( 'Week', 'eventorganiser' ), 'month' => __( 'Month', 'eventorganiser' ) );
 		?>
 		<div id="calendar-view">
-			<span id='loading' style='display:none'><?php _e( 'Loading&#8230;' );?></span>
+			<span id='loading' style='display:none'><?php _e( 'Loading&#8230;', 'eventorganiser' );?></span>
 			<?php foreach( $views as $id => $label ) 
 				printf( '<a href="#" class="nav-tab view-button %s" id="%s">%s</a>', ( $id == $current ? 'nav-tab-active' : '' ), $id, $label );
 			?>

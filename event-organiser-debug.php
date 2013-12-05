@@ -242,7 +242,7 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 		<?php 
 			printf( 
 				'<p class="description"> <span class="eo-debug-warning">*</span> %s </p>',
-				__( 'Known plug-in & theme conflicts, highlighted in red, may be minor or have a simple resolution. Please contact support.' )
+				__( 'Known plug-in & theme conflicts, highlighted in red, may be minor or have a simple resolution. Please contact support.', 'eventorganiser' )
 			);
 		?>
 	</div><!--End .wrap -->
@@ -413,14 +413,18 @@ class EventOrganiser_Debugger{
 			'<span class="%s">%s</span>. %s',
 			esc_attr( $this->alert_class ),
 			$v,
-			sprintf( __( '%s has only been tested up to %s %s' ), $this->plugin, $requirement, $versions['max'] )
+			sprintf(
+				/// TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
+				__( '%s has only been tested up to %s %s', 'eventorganiser' ), $this->plugin, $requirement, $versions['max'] )
 			);
 		}elseif( -1 == $this->check_prequiste( $requirement, $v ) ){
 			printf(
 			'<span class="%s">%s</span>. %s',
 			esc_attr( $this->warning_class ),
 			$v,
-			sprintf( __( '%s requires %s version %s or higher' ), $this->plugin, $requirement, $versions['min'] )
+			sprintf(
+				/// TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
+			 	__( '%s requires %s version %s or higher', 'eventorganiser' ), $this->plugin, $requirement, $versions['min'] )
 			);
 		}
 	}
@@ -552,8 +556,8 @@ class EventOrganiser_Debugger{
 		echo "\n";
 		echo '### Debug Mode ###' . "\n";
 		echo "\n";
-		echo esc_html__('Debug mode')."\t\t\t" . ( defined( 'WP_DEBUG' ) && WP_DEBUG ? 'Enabled' : 'Disabled' ) . "\n";
-		echo esc_html__('Script mode')."\t\t\t" . ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? 'Enabled' : 'Disabled' ) . "\n";
+		echo 'Debug mode' . "\t\t\t" . ( defined( 'WP_DEBUG' ) && WP_DEBUG ? 'Enabled' : 'Disabled' ) . "\n";
+		echo 'Script mode' . "\t\t\t" . ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? 'Enabled' : 'Disabled' ) . "\n";
 		
 		exit();
 	}
