@@ -152,22 +152,32 @@ function eventorganiser_cpt_register() {
 		'menu_name' => __('Events','eventorganiser'),
   );
 
-$exclude_from_search = (eventorganiser_get_option('excludefromsearch')==0) ? false : true;
+	$exclude_from_search = (eventorganiser_get_option('excludefromsearch')==0) ? false : true;
 
-if( !eventorganiser_get_option('prettyurl') ){
-	$event_rewrite = false;
-	$events_slug = true;
-}else{
-	$event_slug = trim(eventorganiser_get_option('url_event','events/event'), "/");
-	$events_slug = trim(eventorganiser_get_option('url_events','events/event'), "/");
-	$event_rewrite = array( 'slug' => $event_slug, 'with_front' => false,'feeds'=> true,'pages'=> true );
+	if( !eventorganiser_get_option('prettyurl') ){
+		$event_rewrite = false;
+		$events_slug = true;
+	}else{
+		$event_slug = trim(eventorganiser_get_option('url_event','events/event'), "/");
+		$events_slug = trim(eventorganiser_get_option('url_events','events/event'), "/");
+		$on = trim(eventorganiser_get_option('url_on','on'), "/");
+		$event_rewrite = array( 'slug' => $event_slug, 'with_front' => false,'feeds'=> true,'pages'=> true );
 
-	/* Workaround for http://core.trac.wordpress.org/ticket/19871 */
-	global $wp_rewrite;  
-	$wp_rewrite->add_rewrite_tag('%event_ondate%','([0-9]{4}(?:/[0-9]{2}(?:/[0-9]{2})?)?)','post_type=event&ondate='); 
-	add_permastruct('event_archive', $events_slug.'/on/%event_ondate%', array( 'with_front' => false ) );
-}
+		/* Workaround for http://core.trac.wordpress.org/ticket/19871 */
+		global $wp_rewrite;  
+		$wp_rewrite->add_rewrite_tag('%event_ondate%','([0-9]{4}(?:/[0-9]{2}(?:/[0-9]{2})?)?)','post_type=event&ondate='); 
+		add_permastruct('event_archive', $events_slug.'/'.$on.'/%event_ondate%', array( 'with_front' => false ) );
+	}
 
+/**
+ * Filters the menu position.
+ * 
+ * This allows you to change where "Events" appears in the admin menu.
+ * 
+ * @link http://codex.wordpress.org/Function_Reference/register_post_type register_post_type codex. 
+ * @param int $menu_position Menu position. Defaults to 5.
+ */
+$menu_position = apply_filters('eventorganiser_menu_position',5);
 $args = array(
 	'labels' => $labels,
 	'public' => true,
@@ -192,11 +202,17 @@ $args = array(
 	'has_archive' => $events_slug, 
 	'hierarchical' => false,
 	'menu_icon' => ( defined( 'MP6' ) && MP6 ? false : EVENT_ORGANISER_URL.'css/images/eoicon-16.png' ),
-	'menu_position' => apply_filters('eventorganiser_menu_position',5),
+	'menu_position' => $menu_position,
 	'supports' => eventorganiser_get_option('supports'),
   ); 
 
-	register_post_type( 'event', apply_filters( 'eventorganiser_event_properties', $args ) );
+	/**
+	 * Filters the settings used in `register_post_type()` for event post type.
+	 * 
+	 * @param array $args Settings passed to `register_post_type()` in the second argument.
+	 */
+	$args = apply_filters( 'eventorganiser_event_properties', $args );
+	register_post_type( 'event', $args );
 }
 add_action('init', 'eventorganiser_cpt_register');
 
@@ -488,7 +504,7 @@ function eventorganiser_cpt_help_text($contextual_help, $screen_id, $screen) {
 	//Add a link to Event Organiser documentation on every EO page
 	$screen->set_help_sidebar( 
 		'<p> <strong>'. __('For more information','eventorganiser').'</strong></br>'
-			.sprintf(__('See the <a %s> documentation</a>','eventorganiser'),'target="_blank" href="http://wp-event-organiser.com/documentation/"').'</p>' 
+			.sprintf(__('See the <a %s> documentation</a>','eventorganiser'),'target="_blank" href="http://docs.wp-event-organiser.com/"').'</p>' 
 			.sprintf('<p><strong><a href="%s">%s</a></strong></p>', admin_url('edit.php?post_type=event&page=debug'),__('Debugging Event Organiser','eventorganiser' ) )
 			.sprintf('<p><strong><a href="%s">%s</a></strong></p>', admin_url('index.php?page=eo-pro'),__('Go Pro!','eventorganiser'))
 	);
@@ -926,6 +942,9 @@ class EO_Walker_TaxonomyDropdown extends Walker_CategoryDropdown{
 
 	function start_el( &$output, $category, $depth = 0, $args = array(), $id = 0 ) {
 		$pad = str_repeat('&nbsp;', $depth * 3);
+		/**
+		 * @ignore
+		 */
 		$cat_name = apply_filters('list_cats', $category->name, $category);
 
 		if( !isset($args['value']) ){

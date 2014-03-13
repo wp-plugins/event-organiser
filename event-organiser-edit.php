@@ -80,12 +80,27 @@ function _eventorganiser_details_metabox( $post ){
 	}
 	
 	//Start of meta box
-	if( $notices = apply_filters('eventorganiser_event_metabox_notice', $notices, $post ) ){
+	/**
+	 * Filters the notice at the top of the event details metabox.
+	 * 
+	 * @param string  $notices The message text.
+	 * @param WP_Post $post    The corresponding event (post).
+	 */
+	$notices = apply_filters('eventorganiser_event_metabox_notice', $notices, $post );
+	if( $notices ){
 		echo '<div class="updated below-h2"><p>'.$notices.'</p></div>';		
 	}
 	?>
 	<div class="<?php echo ( $sche_once ? 'onetime': 'reoccurence' );?>">
-		<p><?php printf( __( 'Ensure dates are entered in %1$s format and times in %2$s (24 hour) format', 'eventorganiser' ), '<strong>'.$format.'</strong>', ' <strong>hh:mm</strong>' );?> </p>
+		<p>
+		<?php 
+		if( $is24 ){
+			printf( __( 'Ensure dates are entered in %1$s format and times in 24 hour format', 'eventorganiser' ), '<strong>'.$format.'</strong>' );
+		}else{
+			printf( __( 'Ensure dates are entered in %1$s format and times in 12 hour format', 'eventorganiser' ), '<strong>'.$format.'</strong>' );
+		}
+ 		?>
+ 		</p>
 
 		<table id="eventorganiser_event_detail" class="form-table">
 				<tr valign="top"  class="event-date">
@@ -306,27 +321,32 @@ function eventorganiser_details_save( $post_id ) {
 
 	//If reocurring, but not editing occurrences, can abort here, but trigger hook.
 	if ( eo_reoccurs( $post_id ) && ( !isset( $raw_data['AlterRe'] ) || 'yes' != $raw_data['AlterRe'] ) ){
+	   /**
+ 		* Triggered after an event has been updated.
+ 		*
+ 		* @param int $post_id The ID of the event
+ 		*/
 		do_action( 'eventorganiser_save_event', $post_id );//Need this to update cache
 		return;
 	}
+
+	//Check dates
+	$date_format = eventorganiser_get_option( 'dateformat' );
+	$is24 = eventorganiser_blog_is_24();
+	$time_format = $is24 ? 'H:i' : 'g:ia';
+	$datetime_format = $date_format . ' ' . $time_format;
 	
 	//Set times for all day events
 	$all_day = intval($raw_data['allday']);
 	if ( $all_day ){
-		$raw_data['StartTime'] = '00:00';
-		$raw_data['FinishTime'] = '23:59';
-	}elseif( !eventorganiser_blog_is_24() ){
-		//Potentially need to parse 24
-		//TODO incorproate into _eventorganiser_check_datetime
-		$raw_data['StartTime'] = date( "H:i", strtotime( $raw_data['StartTime'] ) );
-		$raw_data['FinishTime'] = date( "H:i", strtotime( $raw_data['FinishTime'] ) );
+		$raw_data['StartTime'] = $is24 ? '00:00' : '12:00am';
+		$raw_data['FinishTime'] = $is24 ? '23:59' : '11:59pm';
 	}
-
-	//Check dates
-	$start = _eventorganiser_check_datetime( trim( $raw_data['StartDate'] ) . ' ' . trim( $raw_data['StartTime'] ) );
-	$end = _eventorganiser_check_datetime( trim( $raw_data['EndDate'] ) . ' ' . trim( $raw_data['FinishTime'] ) );
-	$schedule_last = _eventorganiser_check_datetime( trim( $raw_data['schedule_end'] ) . ' ' . trim( $raw_data['StartTime'] ) );
-
+	
+	$start         = eo_check_datetime( $datetime_format, trim( $raw_data['StartDate'] ) . ' ' . trim( $raw_data['StartTime'] ) );
+	$end           = eo_check_datetime( $datetime_format, trim( $raw_data['EndDate'] ) . ' ' . trim( $raw_data['FinishTime'] ) );
+	$schedule_last = eo_check_datetime( $datetime_format, trim( $raw_data['schedule_end'] ) . ' ' . trim( $raw_data['StartTime'] ) );
+	
 	//Collect schedule meta
 	$schedule = $raw_data['schedule'];
 	if ( 'weekly' == $schedule ){
@@ -345,9 +365,12 @@ function eventorganiser_details_save( $post_id ) {
 	foreach ( array( 'include', 'exclude' ) as $key ):
 		$in_ex[$key] = array();
 		$arr = explode( ',', sanitize_text_field( $raw_data[$key] ) ); 
+		
 		if ( !empty( $arr ) ){
+			
 			foreach ( $arr as $date ):
-				$date_obj = _eventorganiser_check_datetime( $date . ' ' . $raw_data['StartTime'], 'Y-m-d' );
+				$date_obj = eo_check_datetime( 'Y-m-d', trim( $date ) );
+			
 				if( $date_obj )
 					$in_ex[$key][] = $date_obj;
 			endforeach;

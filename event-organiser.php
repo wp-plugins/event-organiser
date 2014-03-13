@@ -2,7 +2,7 @@
 /*
 Plugin Name: Event Organiser
 Plugin URI: http://www.wp-event-organiser.com
-Version: 2.6.0
+Version: 2.7.0
 Description: Creates a custom post type 'events' with features such as reoccurring events, venues, Google Maps, calendar views and events and venue pages
 Author: Stephen Harris
 Author URI: http://www.stephenharris.info
@@ -38,7 +38,7 @@ Domain Path: /languages
 /**
  * Set the plug-in database version
  */ 
-define( 'EVENT_ORGANISER_VER', '2.6.0' );
+define( 'EVENT_ORGANISER_VER', '2.7.0' );
 
 
 add_action( 'after_setup_theme', '_eventorganiser_set_constants' );
@@ -79,6 +79,10 @@ define( 'DATETIMEOBJ', 'DATETIMEOBJ', true );
  */
 function eventorganiser_load_textdomain() {
 	$domain = 'eventorganiser';
+
+	/**
+	 *@ignore
+	 */
 	$locale = apply_filters( 'plugin_locale', get_locale(), $domain );
 		
 	$mofile = $domain . '-' . $locale . '.mo';
@@ -86,7 +90,7 @@ function eventorganiser_load_textdomain() {
 	/* Check the global language folder */
 	$files = array( WP_LANG_DIR . '/event-organiser/' . $mofile, WP_LANG_DIR . '/' . $mofile );
 	foreach ( $files as $file ){
-		if( file_exists( $file ) )
+		if ( file_exists( $file ) )
 			return load_textdomain( $domain, $file );
 	}
 
@@ -98,14 +102,14 @@ add_action( 'plugins_loaded', 'eventorganiser_load_textdomain' );
 
 global $eventorganiser_roles;
 $eventorganiser_roles = array(
-		 'edit_events' => __( 'Edit Events', 'eventorganiser' ),
-		 'publish_events' => __( 'Publish Events', 'eventorganiser' ),
-		 'delete_events' => __( 'Delete Events', 'eventorganiser' ),
-		'edit_others_events' => __( 'Edit Others\' Events', 'eventorganiser' ),
-		 'delete_others_events' => __( 'Delete Other\'s Events', 'eventorganiser' ),
-		'read_private_events' => __( 'Read Private Events', 'eventorganiser' ),
-		 'manage_venues' => __( 'Manage Venues', 'eventorganiser' ),
-		 'manage_event_categories' => __( 'Manage Event Categories & Tags', 'eventorganiser' ),
+	'edit_events' => __( 'Edit Events', 'eventorganiser' ),
+	'publish_events' => __( 'Publish Events', 'eventorganiser' ),
+	'delete_events' => __( 'Delete Events', 'eventorganiser' ),
+	'edit_others_events' => __( 'Edit Others\' Events', 'eventorganiser' ),
+	'delete_others_events' => __( 'Delete Other\'s Events', 'eventorganiser' ),
+	'read_private_events' => __( 'Read Private Events', 'eventorganiser' ),
+	'manage_venues' => __( 'Manage Venues', 'eventorganiser' ),
+	'manage_event_categories' => __( 'Manage Event Categories & Tags', 'eventorganiser' ),
 );
 			
 /****** Install, activation & deactivation******/
@@ -118,12 +122,13 @@ register_uninstall_hook( __FILE__, 'eventorganiser_uninstall' );
 
 function eventorganiser_get_option( $option = false, $default = false ){
 
-      $defaults = array(
+	$defaults = array(
 		'url_event' => 'events/event',
 		'url_events' => 'events/event',
 		'url_venue' => 'events/venue',
 		'url_cat' => 'events/category',
 		'url_tag' => 'events/tag',
+		'url_on' => 'on',
 		'navtitle' => __( 'Events', 'eventorganiser' ),
 		'group_events' => '',
 		'feed' => 1,
@@ -138,30 +143,30 @@ function eventorganiser_get_option( $option = false, $default = false ){
 		'excludefromsearch' => 0,
 		'showpast' => 0,
 		'runningisnotpast' => 0,
-      	'hide_addon_page' => 0,
-      	'disable_css' => 0,
-      );
-      $options = get_option( 'eventorganiser_options', $defaults );
-      $options = wp_parse_args( $options, $defaults );
-      
-	if( false === $option )
+		'hide_addon_page' => 0,
+		'disable_css' => 0,
+	);
+	$options = get_option( 'eventorganiser_options', $defaults );
+	$options = wp_parse_args( $options, $defaults );
+	
+	if ( false === $option )
 		return $options;
 
 	/* Backwards compatibility for 'eventag' option */
-	if( $option === 'eventtag' )
+	if ( $option === 'eventtag' )
 		return in_array( 'eventtag', $options['supports'] );
 	
-	if( $option === 'dateformat' ){
+	if ( $option === 'dateformat' ){
 		//Backwards compatibility (migration from mm-dd/dd-mm to php format):
-		if( $options[$option] == 'mm-dd' ){
+		if ( $options[$option] == 'mm-dd' ){
 			$options[$option] = 'm-d-Y';
-		}elseif( $options[$option] == 'dd-mm' ){
+		} elseif ( $options[$option] == 'dd-mm' ){
 			$options[$option] = 'd-m-Y';
 		}
 	}
 
-     if( !isset($options[$option]) )
-          return $default;
+	if ( ! isset( $options[$option] ) )
+		return $default;
 
 	return $options[$option];
 }
@@ -186,7 +191,7 @@ if ( is_admin() ):
 	/****** event editing pages******/
 	require_once(EVENT_ORGANISER_DIR.'event-organiser-edit.php');
 	require_once(EVENT_ORGANISER_DIR.'event-organiser-manage.php');
-        	
+	
 	/****** settings, venue and calendar pages******/
 	require_once(EVENT_ORGANISER_DIR.'event-organiser-settings.php');
 	require_once(EVENT_ORGANISER_DIR.'event-organiser-venues.php');
@@ -199,8 +204,8 @@ if ( is_admin() ):
 endif;
 
 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-    /****** Ajax actions ******/
-    require_once(EVENT_ORGANISER_DIR.'includes/event-organiser-ajax.php');
+	/****** Ajax actions ******/
+	require_once(EVENT_ORGANISER_DIR.'includes/event-organiser-ajax.php');
 }
 
 /****** Functions ******/
@@ -209,6 +214,7 @@ require_once(EVENT_ORGANISER_DIR.'includes/event-organiser-venue-functions.php')
 require_once(EVENT_ORGANISER_DIR.'includes/event-organiser-utility-functions.php');
 require_once(EVENT_ORGANISER_DIR.'includes/deprecated.php');
 require_once(EVENT_ORGANISER_DIR.'includes/event.php');
+require_once(EVENT_ORGANISER_DIR.'includes/class-eo-extension.php');
 
 /****** Templates - note some plug-ins will require this to included admin-side too ******/
 require_once('includes/event-organiser-templates.php');
