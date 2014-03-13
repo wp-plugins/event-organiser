@@ -7,11 +7,40 @@ jQuery(document).ready(function () {
 	function eventorganiser_cat_dropdown(options){
 
 		var terms = options.categories;
-
+		
+		//Are we whitelisting categories 
+		var included_cats = ( typeof options.category !== "undefined" && options.category ? options.category.split(',') : false );   
+		
 		var html="<select class='eo-cal-filter' id='eo-event-cat'>";
 		html+="<option value=''>"+options.buttonText.cat+"</option>";
-		for (var i=0; i<terms.length; i++){
-			html+= "<option class='cat-colour-"+terms[i].colour+" cat' value='"+terms[i].slug+"'>"+terms[i].name+"</option>";
+		var term;
+		for ( var term_id in terms ){
+			
+			term = terms[term_id];
+			
+			//If whitelist check term (or ancestor of) belongs to white list.
+			if( included_cats ){
+				var include_in_dropdown = false;
+				
+				if( $.inArray( term.slug, included_cats ) !== -1 ){
+					include_in_dropdown = true;
+				}
+				
+				//Check ancestors
+				var parent = term;
+				while( !include_in_dropdown && parent.parent > 0 ){
+					parent = terms[parent.parent];
+					if( $.inArray( parent.slug, included_cats ) !== -1 ){
+						include_in_dropdown = true;
+					}
+				}
+				
+				if( !include_in_dropdown ){
+					continue;
+				}
+			}
+			
+			html+= "<option class='cat-colour-"+term.colour+" cat' value='"+term.slug+"'>"+term.name+"</option>";
 		}
 		html+="</select>";
 
@@ -25,16 +54,43 @@ jQuery(document).ready(function () {
 		return element;
 	}
 
+	function eventorganiser_tag_dropdown(options){
+
+		
+		var terms = options.tags;
+		
+		var html="<select class='eo-cal-filter' data-filter-type='event-tag'>";
+		html+="<option value=''>"+options.buttonText.tag+"</option>";
+		for (var i=0; i < terms.length; i++){
+			html+= "<option value='"+terms[i].slug+"'>"+terms[i].name+"</option>";	
+		}
+		html+="</select>";
+
+		var element = $("<span class='fc-header-dropdown filter-tag'></span>");
+		element.append(html);
+		return element;
+	}
+	
 	function eventorganiser_venue_dropdown(options){
 
 		var venues = options.venues;
 
 		var html="<select class='eo-cal-filter' id='eo-event-venue'>";
 		html+="<option value=''>"+options.buttonText.venue+"</option>";
+		
+		//Are we whitelisting venues 
+		var included_venues = ( typeof options.venue !== "undefined" && options.venue ? options.venue.split(',') : false );
 
 		for (var i=0; i<venues.length; i++){
-			html+= "<option value='"+venues[i].term_id+"'>"+venues[i].name+"</option>";
+			
+			//If whitelist check term (or ancestor of) belongs to white list.
+			if( included_venues && $.inArray( venues[i].slug, included_venues ) === -1 ){
+				continue;
+			}
+				
+			html+= "<option value='"+venues[i].term_id+"'>"+venues[i].name+"</option>";	
 		}
+		
 		html+="</select>";
 		var element = $("<span class='fc-header-dropdown filter-venue'></span>");
 		element.append(html);
@@ -90,13 +146,15 @@ jQuery(document).ready(function () {
 				category: calendars[i].event_category,
 				venue: calendars[i].event_venue,
 				customButtons:{
-					category:  eventorganiser_cat_dropdown,
-					venue:  eventorganiser_venue_dropdown,
-					'goto': eventorganiser_mini_calendar
+					tag:		eventorganiser_tag_dropdown,
+					category:  	eventorganiser_cat_dropdown,
+					venue:  	eventorganiser_venue_dropdown,
+					'goto': 	eventorganiser_mini_calendar
 				},
 				theme: calendars[i].theme,
 				categories: eventorganiser.fullcal.categories,
 				venues: eventorganiser.fullcal.venues,
+				tags: eventorganiser.fullcal.tags,
 				timeFormatphp: calendars[i].timeformatphp,
 				timeFormat: calendars[i].timeformat,
 				isRTL: calendars[i].isrtl,
@@ -128,6 +186,7 @@ jQuery(document).ready(function () {
 					function (a, b, v) {
 						var c = $(v.calendar.options.id).find(".filter-category .eo-cal-filter").val();
 						var d = $(v.calendar.options.id).find(".filter-venue .eo-cal-filter").val();
+						var tag = $(v.calendar.options.id).find(".filter-tag .eo-cal-filter").val();
 					
 						if (typeof c !== "undefined" && c !== "" && $.inArray(c, a.category) < 0 ) {
                             	return "<div></div>";
@@ -135,6 +194,10 @@ jQuery(document).ready(function () {
                         if (typeof d !== "undefined" && d !== "" && d != a.venue) {
                             	return "<div></div>";
                         }
+                        
+						if (typeof tag !== "undefined" && tag !== "" && $.inArray(tag, a.tags) < 0 ) {
+                        	return "<div></div>";
+						}
                         
                         if( !wp.hooks.applyFilters( 'eventorganiser.fullcalendar_render_event', true, a, b, v ) )
                         	return "<div></div>";
@@ -174,12 +237,13 @@ jQuery(document).ready(function () {
                         });
                     },
                     buttonText: {
-                    	today: EOAjaxFront.locale.today,
-                    	month: EOAjaxFront.locale.month,
-                		week: EOAjaxFront.locale.week,
-                		day: EOAjaxFront.locale.day,
-                		cat: EOAjaxFront.locale.cat,
-                		venue: EOAjaxFront.locale.venue
+                    	today: 	EOAjaxFront.locale.today,
+                    	month: 	EOAjaxFront.locale.month,
+                		week: 	EOAjaxFront.locale.week,
+                		day: 	EOAjaxFront.locale.day,
+                		cat: 	EOAjaxFront.locale.cat,
+                		venue: 	EOAjaxFront.locale.venue,
+                		tag: 	EOAjaxFront.locale.tag
                     },
                     monthNames: EOAjaxFront.locale.monthNames,
                     monthNamesShort: EOAjaxFront.locale.monthAbbrev,

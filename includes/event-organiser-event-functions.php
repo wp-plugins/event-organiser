@@ -17,8 +17,8 @@
 * * **event_start_before** - default: `null` Events that start before the given date
 * * **event_end_before** - default: `null` Events that end before the given date
 * * **event_start_after** - default: `null` Events that start before the given date
-* * **event_end_after** - default: `null`. Events that end after the given date. This argument, and those above expect dates in **Y-m-d** format or {@link http://wp-event-organiser.com/documentation/relative-date-formats/ relative dates}.
-* * **ondate** - Events that start on this specific date given as a string in YYYY-MM-DD format or {@link http://wp-event-organiser.com/documentation/relative-date-formats/ relative format}. default: `null` 
+* * **event_end_after** - default: `null`. Events that end after the given date. This argument, and those above expect dates in **Y-m-d** format or {@link http://docs.wp-event-organiser.com/querying-events/date-formats/ relative dates}.
+* * **ondate** - Events that start on this specific date given as a string in YYYY-MM-DD format or {@link http://docs.wp-event-organiser.com/querying-events/date-formats/ relative format}. default: `null` 
 * * **numberposts** - default is `-1` (all events)
 * * **orderby** - default is `eventstart`. You can also have `eventend`.
 * * **showpastevents** - default is `true` (it's recommended to use `event_start_after=today` or `event_end_after=today` instead)
@@ -85,7 +85,7 @@
 * @package event-query-functions
 * @link https://gist.github.com/4165380 List up-coming events
  * @link https://gist.github.com/4190351 Adds up-coming events in the venue tooltip
- * @link http://wp-event-organiser.com/documentation/relative-date-formats/ Using relative dates in event queries
+ * @link http://docs.wp-event-organiser.com/querying-events/date-formats/ Using relative dates in event queries
  * @link http://wp-event-organiser.com/forums/topic/retrieving-events-using-wp_query/ Retrieving events with `WP_Query`
  * @link http://wp-event-organiser.com/pro-features/event-venue-queries/ Event-Venue queries
 * @param array $args Event query arguments.
@@ -217,11 +217,11 @@ function eo_get_by_postid($post_id,$deprecated=0, $occurrence_id=0){
 * @since 1.0.0
 * @package event-date-functions
 *
-* @param string $format String of format as accepted by PHP date
+* @param string $format String of format as accepted by PHP date or the constant DATETIMEOBJ to return a DateTime object
 * @param int $post_id Post ID of the event
 * @param int $deprecated The occurrence number. Deprecated. Use $occurrence_id
 * @param int $occurrence_id  The occurrence ID
-* @return string the start date formated to given format, as accepted by PHP date
+* @return string|DateTime the start date formated to given format, as accepted by PHP date or a DateTime object if DATETIMEOBJ is given as format.
  */
 function eo_get_the_start($format='d-m-Y',$post_id=0,$deprecated=0, $occurrence_id=0){
 	global $post;
@@ -253,7 +253,17 @@ function eo_get_the_start($format='d-m-Y',$post_id=0,$deprecated=0, $occurrence_
 
 	$start = $occurrences[$occurrence_id]['start'];
 
-	return apply_filters('eventorganiser_get_the_start', eo_format_datetime( $start, $format ), $start, $format, $post_id, $occurrence_id );
+	/**
+	 * Filters the value returned by `eo_get_the_start()`
+	 *
+	 * @param string|DateTime $formatted_start The DateTime object or formatted returned value (as determined by $format)
+	 * @param DateTime $start The start date as a DateTime object
+	 * @param string $format The format the start date should be returned in
+	 * @param int $post_id Post ID of the event
+	 * @param int $occurrence_id  The occurrence ID
+	 */
+	$formatted_date = apply_filters('eventorganiser_get_the_start', eo_format_datetime( $start, $format ), $start, $format, $post_id, $occurrence_id );
+	return $formatted_date;
 }
 
 /**
@@ -385,7 +395,17 @@ function eo_get_the_end($format='d-m-Y',$post_id=0,$deprecated=0, $occurrence_id
 
 	$end = $occurrences[$occurrence_id]['end'];
 
-	return apply_filters('eventorganiser_get_the_end', eo_format_datetime( $end, $format ), $end, $format, $post_id, $occurrence_id );
+	/**
+	 * Filters the value returned by `eo_get_the_end()`
+	 *
+	 * @param string|DateTime $formatted_end The DateTime object or formatted returned value (as determined by $format)
+	 * @param DateTime $end The end date as a DateTime object
+	 * @param string $format The format the end date should be returned in
+	 * @param int $post_id Post ID of the event
+	 * @param int $occurrence_id  The occurrence ID
+	 */
+	$formatted_date = apply_filters('eventorganiser_get_the_end', eo_format_datetime( $end, $format ), $end, $format, $post_id, $occurrence_id );
+	return $formatted_date;
 }
 
 /**
@@ -431,7 +451,16 @@ function eo_get_next_occurrence($format='d-m-Y',$post_id=0){
 		return false;
 
 	$next = $next_occurrence['start'];
-	return apply_filters('eventorganiser_get_next_occurrence', eo_format_datetime( $next, $format ), $next, $format, $post_id );
+	/**
+	 * Filters the value returned by `eo_get_next_occurrence()`
+	 *
+	 * @param string|DateTime $formatted_date The DateTime object or formatted returned value (as determined by $format)
+	 * @param DateTime $next The next date of this event as a DateTime object
+	 * @param string $format The format the date should be returned in
+	 * @param int $post_id Post ID of the event
+	 */
+	$formatted_date = apply_filters('eventorganiser_get_next_occurrence', eo_format_datetime( $next, $format ), $next, $format, $post_id );
+	return $formatted_date;
 }
 
 /**
@@ -578,7 +607,17 @@ function eo_get_schedule_start($format='d-m-Y',$post_id=0){
 	$post_id = (int) ( empty($post_id) ? get_the_ID() : $post_id);
 	$schedule = eo_get_event_schedule($post_id);
 	$schedule_start = $schedule['schedule_start'];
-	return apply_filters('eventorganiser_get_schedule_start', eo_format_datetime( $schedule_start, $format ), $schedule_start, $format, $post_id );
+	
+	/**
+	 * Filters the value returned by `eo_get_schedule_start()`
+	 *
+	 * @param string|DateTime $formatted_date The DateTime object or formatted returned value (as determined by $format)
+	 * @param DateTime $end The start date of the first occurrence of this event as a DateTime object
+	 * @param string $format The format the date should be returned in
+	 * @param int $post_id Post ID of the event
+	 */
+	$formatted_date = apply_filters('eventorganiser_get_schedule_start', eo_format_datetime( $schedule_start, $format ), $schedule_start, $format, $post_id );
+	return $formatted_date;
 }
 
 /**
@@ -620,7 +659,17 @@ function eo_get_schedule_last($format='d-m-Y',$post_id=0){
 	$post_id = (int) ( empty($post_id) ? get_the_ID() : $post_id);
 	$schedule = eo_get_event_schedule($post_id);
 	$schedule_last = $schedule['schedule_last'];
-	return apply_filters('eventorganiser_get_schedule_last', eo_format_datetime( $schedule_last, $format ), $schedule_last, $format, $post_id );
+	
+	/**
+	 * Filters the value returned by `eo_get_schedule_last()`
+	 *
+	 * @param string|DateTime $formatted_date The DateTime object or formatted returned value (as determined by $format)
+	 * @param DateTime $end The **start** date of the last occurrence of this event as a DateTime object
+	 * @param string $format The format the date should be returned in
+	 * @param int $post_id Post ID of the event
+	 */
+	$formatted_date = apply_filters('eventorganiser_get_schedule_last', eo_format_datetime( $schedule_last, $format ), $schedule_last, $format, $post_id );
+	return $formatted_date;
 }
 
 /**
@@ -829,8 +878,19 @@ function eo_get_the_future_occurrences_of( $post_id=0 ){
 		);
 	endforeach;
 	
-	return apply_filters( 'eventorganiser_get_the_future_occurrences_of', $occurrences, $post_id );
+	/**
+	 * Filters the value returned by `eo_get_the_future_occurrences_of()`
+	 *
+	 * The filtered value is an array of occurrences. Each occurrence is an array with 'start' and 'end' key. 
+	 * Both of these hold a DateTime object (for the start and end of that occurrence respecitvely).
+	 *
+	 * @param array $occurrences Future occurrences of this event
+	 * @param int $post_id Post ID of the event
+	 */
+	$occurrences = apply_filters( 'eventorganiser_get_the_future_occurrences_of', $occurrences, $post_id );
+	return $occurrences;
 }
+
 /** 
 * Returns an array of occurrences. Each occurrence is an array with 'start' and 'end' key. 
 *  Both of these hold a DateTime object (for the start and end of that occurrence respecitvely).
@@ -890,7 +950,17 @@ function eo_get_the_occurrences_of($post_id=0){
 		wp_cache_set( 'eventorganiser_occurrences_'.$post_id, $occurrences );
 	}
 
-	return apply_filters( 'eventorganiser_get_the_occurrences_of', $occurrences, $post_id );
+	/**
+	 * Filters the value returned by `eo_get_the_occurrences_of()`
+	 *
+	 * The filtered value is an array of occurrences. Each occurrence is an array with 'start' and 'end' key.
+	 * Both of these hold a DateTime object (for the start and end of that occurrence respecitvely).
+	 *
+	 * @param array $occurrences All occurrences of this event
+	 * @param int $post_id Post ID of the event
+	 */
+	$occurrences = apply_filters( 'eventorganiser_get_the_occurrences_of', $occurrences, $post_id );
+	return $occurrences;
 }
 
 /**
@@ -933,11 +1003,14 @@ function eo_get_event_color($post_id=0){
 
 	/**
 	 * Filters the colour associated with an event
-	 *@link http://wordpress.org/support/topic/plugin-event-organiser-color-code-for-venues-instead-of-categories
-	 *@param string $color Event colour in HEX format
-	 *@param int $post_id The event (post) ID
+	 * 
+	 * @link http://wordpress.org/support/topic/plugin-event-organiser-color-code-for-venues-instead-of-categories
+	 * @param string $color Event colour in HEX format
+	 * @param int $post_id The event (post) ID
 	*/
-	return apply_filters('eventorganiser_event_color',$color,$post_id);
+	$color = apply_filters('eventorganiser_event_color',$color,$post_id);
+	
+	return $color;
 }
 
 /**
@@ -1008,6 +1081,13 @@ function eo_get_event_classes($post_id=0, $occurrence_id=0){
 		$event_classes[] = 'eo-event-running';
 	}
 	
+	/**
+	 * Filters an array of classes for specified event (occurrence) 
+	 *
+	 * @param array $event_classes An array of class pertaining to this occurrence
+	 * @param int $post_id The ID of the event
+	 * @param into $occurrence_id The ID of the occurrence
+	 */
 	$event_classes = apply_filters( 'eventorganiser_event_classes', $event_classes, $post_id, $occurrence_id );
 	$event_classes = array_unique( $event_classes );
 	$event_classes = array_map( 'sanitize_html_class', $event_classes );
@@ -1158,6 +1238,9 @@ function eo_get_add_to_google_link( $event_id = 0, $occurrence_id = 0 ){
 		$end->setTimezone( new DateTimeZone('UTC') );
 	endif;
 	
+	/**
+	 * @ignore
+	 */
 	$excerpt = apply_filters('the_excerpt_rss', get_the_excerpt());
 	
 	$url = add_query_arg( array(
@@ -1259,12 +1342,12 @@ function eo_event_category_dropdown( $args = '' ) {
  * * **headercenter** (string) What appears on the left of the calendar header. Default ''.
  * * **headerright** (string) What appears on the left of the calendar header. Default 'prev next today'.
  * * **defaultview** (string) The view the calendar loads on. Default 'month',
- * * **event_category** (string) Restrict calendar to specified category. Default '' (all categories)
- * * **event_venue** (string) Restrict calendar to specified venue. Default '' (all venues)
+ * * **event-category** (string|array) Restrict calendar to specified category(ues) (by slug). Default all categories.
+ * * **event-venue** (string|array) Restrict calendar to specified venue(s) (by slug). Default all venues.
  * * **timeformat** (string) Time format for calendar. Default 'G:i'.
  * * **axisformat** (string) Axis time format (for day/week views). WP's time format option.
  * * **key** (bool) Whether to show a category key. Default false.
- * * **tooltip** (bool) Whether to show a tooltips. Default true. Content is filtered by [`eventorganiser_event_tooltip`](http://wp-event-organiser.com/documentation/hook/eventorganiser_event_tooltip/)
+ * * **tooltip** (bool) Whether to show a tooltips. Default true. Content is filtered by [`eventorganiser_event_tooltip`](http://codex.wp-event-organiser.com/hook-eventorganiser_event_tooltip.html)
  * * **users_events** - (bool) True to show only eents for which the current user is attending
  * * **weekends** (bool) Whether to include weekends in the calendar. Default true.
  * * **mintime** (string) Earliest time to show on week/day views. Default '0',
@@ -1288,12 +1371,13 @@ function eo_event_category_dropdown( $args = '' ) {
  * @param array $args An array of attributes for the calendar 
  * @return string HTML mark-up.
 */
-function eo_get_event_fullcalendar( $args ){
+function eo_get_event_fullcalendar( $args = array() ){
 
 	global $wp_locale;
 	$defaults = array(
 		'headerleft'=>'title', 'headercenter'=>'', 'headerright'=>'prev next today', 'defaultview'=>'month',
-		'event_category'=>'', 'event_venue'=>'', 'timeformat'=>get_option('time_format'), 'axisformat'=>get_option('time_format'), 'key'=>false,
+		'event-category'=>'','event_category'=>'', 'event-venue' => '', 'event_venue'=>'', 
+		'timeformat'=>get_option('time_format'), 'axisformat'=>get_option('time_format'), 'key'=>false,
 		'tooltip'=>true, 'weekends'=>true, 'mintime'=>'0', 'maxtime'=>'24', 'alldayslot'=>true,
 		'alldaytext'=>__('All Day','eventorganiser'), 'columnformatmonth'=>'D', 'columnformatweek'=>'D n/j', 'columnformatday'=>'l n/j',
 		'titleformatmonth' => 'F Y', 'titleformatweek' => "M j[ Y]{ '&#8212;'[ M] j, Y}", 'titleformatday' => 'l, M j, Y',
@@ -1305,6 +1389,14 @@ function eo_get_event_fullcalendar( $args ){
 	
 	$key = $args['key'];
 	unset($args['key']);
+	
+	//Support 'event-category' and 'event-venue'. Backwards compat with 'event_category'/'event_venue'
+	$args['event_category'] = empty( $args['event_category'] ) ? $args['event-category'] : $args['event_category'];
+	$args['event_venue'] = empty( $args['event_venue'] ) ? $args['event-venue'] : $args['event_venue'];
+	
+	//Convert event_category / event_venue to comma-delimitered strings
+	$args['event_category'] = is_array( $args['event_category'] ) ? implode( ',', $args['event_category'] ) : $args['event_category'];
+	$args['event_venue'] = is_array( $args['event_venue'] ) ? implode( ',', $args['event_venue'] ) : $args['event_venue'];
 	
 	//Convert php time format into xDate time format
 	$date_attributes = array( 'timeformat', 'axisformat', 'columnformatday', 'columnformatweek', 'columnformatmonth',
@@ -1393,16 +1485,26 @@ function eo_get_event_meta_list( $post_id=0 ){
 
 	$html .='</ul>';
 
-	return apply_filters('eventorganiser_event_meta_list', $html, $post_id);
+	/**
+	 * Filters mark-up for the event details list.
+	 *
+	 * The event details list is just a simple list containig details pertaining
+	 * to the event (venue, categories, tags) etc.
+	 *
+	 * @param array $html The generated mark-up
+	 * @param int $post_id Post ID of the event
+	 */
+	$html = apply_filters('eventorganiser_event_meta_list', $html, $post_id);
+	return $html;
 }
 
 
 /**
- * Returns an the link for the event archive
+ * Returns an the link for the event archive.
  * 
  * Optionally provide the year , or month or day to get an year/month/day archive link. 
- * To get a month archive you should provide a year
- * To get a day archive you should provide a year and month.
+ * To get a month archive you should provide a year. To get a day archive you should 
+ * provide a year and month.
  * 
  * ### Example
  * On a year archive page, show  a link to the following year.
@@ -1473,6 +1575,12 @@ function eo_break_occurrence( $post_id, $occurrence_id ){
 	$post = get_post( $post_id );
 	setup_postdata( $post_id );
 
+	/**
+	 * Triggered before an occurrence is broken from an event.
+	 *
+	 * @param int $post_id The ID of the original parent event
+	 * @param int $occurrence_id The ID of the occurrence being broken
+	 */
 	do_action( 'eventorganiser_pre_break_occurrence', $post_id, $occurrence_id );
 	
 	$tax_input = array();
@@ -1512,7 +1620,19 @@ function eo_break_occurrence( $post_id, $occurrence_id ){
 
 			//Don't copy these
 			$ignore_meta = array( '_eventorganiser_uid', '_eo_tickets', '_edit_last', '_edit_last', '_edit_lock' ) ;
+
+			/**
+			 * Filters an array of keys which should be ignored when breaking an 
+			 * occurrence.
+			 * 
+			 * When breaking an occurrence from an event a new event is made for 
+			 * that occurrence. Meta data from the original event is copied across, 
+			 * unless its meta key exists in the filtered array.  
+			 * 
+			 * @param array $ignore_meta Array of meta keys to be ignored
+			 */
 			$ignore_meta = apply_filters( 'eventorganiser_breaking_occurrence_exclude_meta', $ignore_meta );
+			
 			if( in_array( $meta_key, $ignore_meta ) )
 				continue;
 		
@@ -1530,6 +1650,13 @@ function eo_break_occurrence( $post_id, $occurrence_id ){
 	}
 	_eventorganiser_delete_calendar_cache();
 
+	/**
+	 * Triggered after an occurrence has been broken from an event.
+	 *
+	 * @param int $post_id The ID of the original parent event
+	 * @param int $occurrence_id The ID of the occurrence being broken
+	 * @param int $new_event_id The ID of the newly created event
+	 */
 	do_action( 'eventorganiser_occurrence_broken', $post_id, $occurrence_id, $new_event_id );
 
 	wp_reset_postdata();
@@ -1556,7 +1683,8 @@ function eo_get_event_uid( $post_id = 0 ){
 	
 	if( empty( $uid ) ){
 		$now = new DateTime();
-		$uid = implode( '-', array( $now->format('Ymd\THi\Z'), microtime(true), 'EO', get_the_ID(), get_current_blog_id() ) ).'@'.$_SERVER['SERVER_ADDR'];
+		$address = isset( $_SERVER['SERVER_ADDR'] ) ? $_SERVER['SERVER_ADDR'] : 'unknown';
+		$uid = implode( '-', array( $now->format('Ymd\THi\Z'), microtime(true), 'EO', get_the_ID(), get_current_blog_id() ) ).'@'.$address;
 		add_post_meta( get_the_ID(), '_eventorganiser_uid', $uid );
 	}
 	

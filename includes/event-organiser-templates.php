@@ -25,6 +25,10 @@
  * @param string $name The name of the specialised template.
  */
 function eo_get_template_part( $slug, $name = null ) {
+	
+	/**
+	 * @ignore
+	 */
 	do_action( "get_template_part_{$slug}", $slug, $name );
 
 	$templates = array();
@@ -57,8 +61,22 @@ function eo_locate_template( $template_names, $load = false, $require_once = tru
 
 	$template_dir = get_stylesheet_directory(); //child theme
 	$parent_template_dir = get_template_directory(); //parent theme
-
-	$stack = apply_filters( 'eventorganiser_template_stack', array( $template_dir, $parent_template_dir, EVENT_ORGANISER_DIR . 'templates' ) );
+	$stack = array( $template_dir, $parent_template_dir, EVENT_ORGANISER_DIR . 'templates' );
+	
+	/**
+	 * Filters the template stack: an array of directories the plug-in looks for
+	 * for templates.
+	 * 
+	 * The directories are checked in the order in which they appear in this array. 
+	 * By default the array includes (in order)
+	 * 
+	 *  - child theme directory
+	 *  - parent theme directory
+	 *  - `event-organiser/templates` 
+	 *
+	 * @param array $stack Array of directories (absolute path).
+	 */
+	$stack = apply_filters( 'eventorganiser_template_stack', $stack );
 	$stack = array_unique( $stack );
 	
 	foreach ( (array) $template_names as $template_name ) {
@@ -96,21 +114,21 @@ function eo_is_event_archive( $type = false ){
 	if( !is_post_type_archive('event') )
 		return false;
 	
-	$ondate = str_replace('/','-',get_query_var('ondate'));
+	$ondate = str_replace('/','-', trim( get_query_var('ondate') ) );
 
 	switch( $type ){
 		case 'year':
-			if( _eventorganiser_check_datetime( $ondate.'-01-01 00:00', 'Y-m-d' ) )
+			if( preg_match( '/\d{4}$/', $ondate ) && eo_check_datetime( 'Y-m-d', $ondate.'-01-01' ) )
 				return true;
 			return false;
 
 		case 'month':
-			if( _eventorganiser_check_datetime( $ondate.'-01 00:00', 'Y-m-d' ) )
+			if( preg_match( '/^\d{4}-\d{2}$/', $ondate ) && eo_check_datetime( 'Y-m-d', $ondate.'-01' ) )
 				return true;
 			return false;
 
 		case 'day':
-			if( _eventorganiser_check_datetime( $ondate.' 00:00', 'Y-m-d') )
+			if( preg_match( '/^\d{4}-\d{2}-\d{2}$/', $ondate ) && eo_check_datetime( 'Y-m-d', $ondate ) )
 				return true;
 			return false;
 
@@ -154,6 +172,11 @@ function eo_get_event_archive_date( $format = DATETIMEOBJ ){
 		return false;
 	
 	$ondate = str_replace('/','-',get_query_var('ondate'));
+	
+	if( empty( $ondate) ){
+		return false;
+	}
+	
 	$parts = count(explode('-',$ondate));
 
 	if( $parts == 1 && is_numeric($ondate) ){
@@ -164,8 +187,8 @@ function eo_get_event_archive_date( $format = DATETIMEOBJ ){
 		$ondate .= '-01';
 	}
 		
-	$ondate =  _eventorganiser_check_datetime( $ondate.' 00:00', 'Y-m-d' );
-	return eo_format_datetime($ondate, $format);
+	$ondate = eo_check_datetime( 'Y-m-d', $ondate );
+	return eo_format_datetime( $ondate, $format );
 }
 
 /**
@@ -279,11 +302,25 @@ function _eventorganiser_single_event_content( $content ){
 	ob_start();
 	eo_get_template_part('event-meta','event-single');
 	//include(EVENT_ORGANISER_DIR.'templates/event-meta-event-single.php');
-	$event_content = ob_get_contents();
+	$event_details = ob_get_contents();
 	ob_end_clean();
 
-	$event_content = apply_filters('eventorganiser_pre_event_content', $event_content, $content);
+	/**
+	 * Filters the event details automatically appended to the event's content
+	 * when single-event.php is not present in the theme.
+	 * 
+	 * If template handling is enabled and the theme does not have `single-event.php` 
+	 * template, Event Organiser uses `the_content` filter to add prepend the content
+	 * with event details. This filter allows you to change the prepended details.
+	 * 
+	 * Unless you have a good reason, it's strongly recommended to change the templates 
+	 * rather than use this filter.
+	 * 
+	 * @param string $event_details The event details to be added.
+	 * @param string $content       The original event content
+	 */
+	$event_details = apply_filters('eventorganiser_pre_event_content', $event_details, $content);
 
-	return $event_content.$content;
+	return $event_details.$content;
 }
 ?>

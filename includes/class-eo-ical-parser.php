@@ -35,29 +35,100 @@
  */
 class EO_ICAL_Parser{
 
-	var $remote_timeout = 10;
-	
+	/**
+	 * Array of events present in the feed
+	 * @var array
+	 */
 	var $events = array();
+	
+	/**
+	 * Array of venues present in the feed
+	 * @var array
+	*/
 	var $venues = array();
+	
+	/**
+	 * Array of venue metadata present in the feed
+	 * @var array
+	*/
 	var $venue_meta = array();
+	
+	/**
+	 * Array of categories present in the feed
+	 * @var array
+	*/
 	var $categories = array();
 	
+	/**
+	 * Number of events parsed.
+	 * @var int
+	 */
+	var $events_parsed = 0;
 	
+	/**
+	 * Number of venues parsed.
+	 * @var int
+	 */
+	var $venue_parsed = 0;
+	
+	/**
+	 * Number of categories parsed.
+	 * @var int
+	 */
+	var $categories_parsed = 0;
+	
+	/**
+	 * Timeout for remote fetching (in seconds)
+	 * @var int 
+	 */
+	var $remote_timeout = 10;
+	
+
+	/**
+	 * Array of WP_Error objects. These are errors which abort the parsing.
+	 * @var array
+	 */
 	var $errors = array();
+	
+	/**
+	 * Array of WP_Error objects. These are soft-errors which the parser tries to deal with
+	 * @var array
+	 */
 	var $warnings = array();
 
-	var $events_parsed = 0;
-	var $venue_parsed = 0;
-	var $categories_parsed = 0;
-
+	
+	/**
+	 * The current event being parsed. Stores data retrieved so far in the parsing.
+	 * @var array
+	 */
 	var $current_event = array();
 	
+	/**
+	 * Stores the parsed UIDs to ensure they are unique.
+	 * @var array
+	 */
+	var $parsed_uids = array();
+	
+	/**
+	 * Indicates which line in the feed we are at
+	 * @var int
+	 */
 	var $line = 0; //Current line being parsed
 	
+	/**
+	 * Keeps track of where we are in the feed.
+	 * @var string
+	 */
 	var $state = "NONE";
 	
+	
+	/**
+	 * Option to toggle whether a HTML description should be used (if present).
+	 * @var bool
+	 */
 	var $parse_html = true; //If description is given in HTML, try to use that.
 
+	
 	/**
 	 * Constructor with settings passed as arguments
 	 * Available options include 'status_map' and 'default_status'.
@@ -76,6 +147,25 @@ class EO_ICAL_Parser{
 					'parse_html' => true,
 				), $args );
 		
+		/**
+		 * Filters the options for the iCal parser class
+		 * 
+		 * `$args` is an array with keys:
+		 * 
+		 *  - `status_map` - mapping iCal status to WordPress status. By default
+		 *     <pre><code>
+		 *     array(
+		 *			'CONFIRMED' => 'publish',
+		 *			'CANCELLED' => 'trash',
+		 *			'TENTATIVE' => 'draft',
+				);
+		 *     </code></pre>
+		 *  - `default_status` - the status to use for the event if the iCal feed does not provide a status#
+		 *  - `parse_html` - whether to parse a HTML version of event descriptions if provided 
+		 *
+		 * @param array $args Options for the iCal Parser
+		 * @param EO_ICAL_Parser $ical_parser The iCal parser object
+		 */
 		$args = apply_filters_ref_array( 'eventorganiser_ical_parser_args', array( $args, &$this ) );
 		
 		$this->calendar_timezone = eo_get_blog_timezone();
@@ -100,7 +190,7 @@ class EO_ICAL_Parser{
 			$this->ical_array = $this->file_to_array( $file );
 
 		//Remote file
-		}elseif( preg_match('!^(http|https|ftp)://!i', $file) ){
+		}elseif( preg_match('!^(http|https|ftp|webcal)://!i', $file) ){
 			$this->ical_array = $this->url_to_array( $file );
 
 		}else{
@@ -128,6 +218,28 @@ class EO_ICAL_Parser{
 		$this->venue_parsed = count( $this->venues );
 		$this->categories_parsed = count( $this->categories );
 		
+		/**
+		 * Filter the feed class by reference.
+		 * 
+		 * This filter allows you to view and modify all events, venues and categories from
+		 * a parsed iCal feed. The example below adds all events to the category 'imported'
+		 * 
+		 * <pre><code>
+		 * add_action( 'eventorganiser_ical_feed_parsed', 'my_auto_assign_event_cat_to_feed' );
+		 * function my_auto_assign_event_cat_to_feed( $ical_parser ){
+		 *      if( $ical_parser->events_parsed ){
+		 *          foreach( $ical_parser->events_parsed  as $index => $event ){
+		 *      		$this->events_parsed[$index]['event-category'][] = 'imported';
+		 *      	}
+		 *      }
+		 * }
+		 * </code></pre>
+		 * 
+		 * @since 2.7
+		 * @param EO_ICAL_Parser $EO_ICAL_Parser The feed parser object containg parsed events/venues/categories.
+		 */
+		do_action_ref_array( 'eventorganiser_ical_feed_parsed', array( &$this ) );
+		
 		return true;
 	}
 	
@@ -139,6 +251,10 @@ class EO_ICAL_Parser{
 	 * @return array|bool Array of line in ICAL feed, false on error 
 	 */
 	protected function url_to_array( $url ){
+		
+		//Handle webcal:// protocol: change to http://
+		$url = preg_replace('#^(webcal://)#', 'http://', $url );
+		
 		$response =  wp_remote_get( $url, array( 'timeout' => $this->remote_timeout ) );
 		$contents = wp_remote_retrieve_body( $response );
 		$response_code = wp_remote_retrieve_response_code( $response );
@@ -411,7 +527,16 @@ class EO_ICAL_Parser{
 
 		switch( $property ):
 		case 'UID':
+			//TODO accept first event and ignore subsequent events with same UID?
+			if( in_array( $value, $this->parsed_uids ) ){
+				throw new Exception(
+					sprintf(
+						__( 'Duplicate UID (%s) found in feed. UIDs must be unique.', 'eventorganiser' ),
+						esc_html( $value )
+					));
+			}
 			$this->current_event['uid'] = $value;
+			$this->parsed_uids[] = $value;
 		break;
 
 		case 'CREATED':
@@ -600,7 +725,7 @@ class EO_ICAL_Parser{
 		//If we have something like (GMT+01.00) Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna lets try the cities
 		if( is_null( $tz ) && preg_match( '/GMT(?P<offset>.+)\)(?P<cities>.+)?/', $tzid, $matches ) ){
 			
-			if( $matches['cities'] ){
+			if( !empty( $matches['cities'] ) ){
 				$parts = explode( '/', $matches['cities'] );
 				$tz_cities = array_map( 'trim', $parts );
 				$identifiers = timezone_identifiers_list();
@@ -663,6 +788,12 @@ class EO_ICAL_Parser{
 		}
 
 		//Let plugins over-ride this
+		/**
+		 * Filters the DateTimeZone object parsed from a timezone ID in an iCal feed.
+		 * 
+		 * @param DateTimeZone $tz The timezone interpreted from a given string ID
+		 * @param string $tzid The give timezone ID
+		 */
 		$tz = apply_filters( 'eventorganiser_ical_timezone', $tz, $tzid );
 		
 		if ( ! ($tz instanceof DateTimeZone ) ) {
@@ -759,63 +890,68 @@ class EO_ICAL_Parser{
 		$rule_parts = explode(';',$RRule);
 
 		foreach ($rule_parts as $rule_part):
+		
+			if( empty( $rule_part ) ){
+				continue;
+			}
 
-		//Each rule part is of the form PROPERTY=VALUE
-		$prop_value =  explode('=',$rule_part, 2);
-		$property = $prop_value[0];
-		$value = $prop_value[1];
+			//Each rule part is of the form PROPERTY=VALUE
+			$prop_value =  explode('=',$rule_part, 2);
+			$property = $prop_value[0];
+			$value = $prop_value[1];
 
-		switch( $property ):
-			case 'FREQ':
-				$rule_array['schedule'] =strtolower($value);
-			break;
+			switch( $property ):
+				case 'FREQ':
+					$rule_array['schedule'] =strtolower($value);
+				break;
 
-			case 'INTERVAL':
-				$rule_array['frequency'] =intval($value);
-			break;
+				case 'INTERVAL':
+					$rule_array['frequency'] =intval($value);
+				break;
 
-			case 'UNTIL':
-				//Is the scheduled end a date-time or just a date?
-				if(preg_match('/^((\d{8}T\d{6})(Z)?)/', $value))
-					$date = $this->parse_ical_datetime( $value, new DateTimeZone('UTC') );
-				else
-					$date = $this->parse_ical_date( $value );
+				case 'UNTIL':
+					//Is the scheduled end a date-time or just a date?
+					if( preg_match( '/^((\d{8}T\d{6})(Z)?)/', $value ) )
+						$date = $this->parse_ical_datetime( $value, new DateTimeZone('UTC') );
+					else
+						$date = $this->parse_ical_date( $value );
 			
-				$rule_array['schedule_last'] = $date;
-			break;
+					$rule_array['schedule_last'] = $date;
+				break;
 			
-			case 'COUNT':
-				$rule_array['number_occurrences'] = absint( $value );
-			break;
+				case 'COUNT':
+					$rule_array['number_occurrences'] = absint( $value );
+				break;
 
-			case 'BYDAY':
-				$byday = $value;
-			break;
+				case 'BYDAY':
+					$byday = $value;
+				break;
 
-			case 'BYMONTHDAY':
-				$bymonthday = $value;
-			break;
+				case 'BYMONTHDAY':
+					$bymonthday = $value;
+				break;
 			
-			//Not supported with warning
-			case 'BYSECOND':
-			case 'BYMINUTE':
-			case 'BYHOUR':
-			case 'BYYEARDAY':
-			case 'BYWEEKNO':
-			case 'BYSETPOS':
-				$this->report_warning(
-						$this->line,
-						'unsupported-recurrence-rule',
-						sprintf(
-							'Feed contains unrecognised recurrence rule: "%s" and may have not been imported correctly.',
-							 $property 
-						)
-				);
-			break;
+				//Not supported with warning
+				case 'BYSECOND':
+				case 'BYMINUTE':
+				case 'BYHOUR':
+				case 'BYYEARDAY':
+				case 'BYWEEKNO':
+				case 'BYSETPOS':
+					$this->report_warning(
+							$this->line,
+							'unsupported-recurrence-rule',
+							sprintf(
+								'Feed contains unrecognised recurrence rule: "%s" and may have not been imported correctly.',
+								 $property 
+							)
+					);
+				break;
 			
-			//Not supported without warning
-			case 'WKST':
-			break;
+				//Not supported without warning
+				case 'WKST':
+				break;
+				
 			endswitch;
 
 		endforeach;

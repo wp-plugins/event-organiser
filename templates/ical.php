@@ -102,13 +102,17 @@ EXDATE<?php echo $vdate;?>:<?php echo implode(',',$exclude_strings);?>
 RDATE<?php echo $vdate;?>:<?php echo implode(',',$include_strings);?>
 
 <?php endif; ?>
-<?php echo eventorganiser_escape_ical_text( html_entity_decode( "SUMMARY: " . get_the_title_rss() ) ) . "\n" ;?>
+<?php echo eventorganiser_fold_ical_text( html_entity_decode( "SUMMARY: " . eventorganiser_escape_ical_text( get_the_title_rss() ) ) ) . "\n" ;?>
 <?php
 	$excerpt = get_the_excerpt();
-	$excerpt = apply_filters('the_excerpt_rss', $excerpt);
+	$excerpt = eventorganiser_escape_ical_text( apply_filters('the_excerpt_rss', $excerpt) );
 	if( !empty($excerpt) ):
-		echo eventorganiser_escape_ical_text( html_entity_decode( "DESCRIPTION: $excerpt" ) ) . "\n";
+		echo eventorganiser_fold_ical_text( html_entity_decode( "DESCRIPTION: $excerpt" ) ) . "\n";
 	endif; ?>
+<?php 
+	$description = eventorganiser_fold_ical_text( get_the_content() );
+	echo eventorganiser_fold_ical_text( html_entity_decode( "X-ALT-DESC;FMTTYPE=text/html: $description" ) ) . "\n";
+?>
 <?php 
 	$cats = get_the_terms( get_the_ID(), 'event-category' );
 if( $cats && !is_wp_error($cats) ):
@@ -121,10 +125,10 @@ CATEGORIES:<?php echo implode(',',$cat_names); ?>
 if( eo_get_venue() ): 
 	$venue = eo_get_venue_name( eo_get_venue() );
 ?>
-LOCATION: <?php echo eventorganiser_escape_ical_text( $venue );?>
-
+LOCATION:<?php echo eventorganiser_fold_ical_text( eventorganiser_escape_ical_text( $venue ) ) . "\n";?>
+GEO:<?php echo implode( ';', eo_get_venue_latlng( $venue ) ) . "\n";?>
 <?php endif; ?>
-ORGANIZER: <?php echo eventorganiser_escape_ical_text( get_the_author() );?>
+ORGANIZER:<?php echo eventorganiser_fold_ical_text( eventorganiser_escape_ical_text( get_the_author() ) );?>
 
 END:VEVENT
 <?php

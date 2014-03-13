@@ -52,7 +52,19 @@ function eo_format_datetime($datetime,$format='d-m-Y'){
 			$dateformatstring = substr( $dateformatstring, 1, strlen( $dateformatstring ) -1 );
 	 endif;	
 	$formatted_datetime = $datetime->format($dateformatstring);
-	return apply_filters('eventorganiser_format_datetime', $formatted_datetime , $format, $datetime);
+	
+	/**
+	 * Filters the formatted date (DateTime object).
+	 * 
+	 * Formats should be specified using [php date format standards](http://php.net/manual/en/function.date.php).
+	 *
+	 * @link http://php.net/manual/en/function.date.php PHP date formatting standard
+	 * @param string $formatted_datetime The formatted date.
+	 * @param string $format             The format in which the date should be returned.
+	 * @param string $datetime           The provided DateTime object
+	 */
+	$formatted_datetime = apply_filters('eventorganiser_format_datetime', $formatted_datetime , $format, $datetime);
+	return $formatted_datetime;
 }
 
 /**
@@ -136,6 +148,12 @@ function eo_get_blog_timezone(){
 /**
  * Calculates and formats an interval between two days, passed in any order.
  * It's a PHP 5.2 workaround for {@link http://www.php.net/manual/en/dateinterval.format.php date interval format}
+ * 
+ * This does not correctly handle DST but instead mimics the same buggy behaviour exphibted by PHP's date interval. 
+ * See https://bugs.php.net/bug.php?id=63953
+ * 
+ * @see https://bugs.php.net/bug.php?id=63953
+ * 
  * @since 1.5
  *
  * @param dateTime $_date1 One date to compare
@@ -150,11 +168,11 @@ function eo_date_interval($_date1,$_date2, $format){
 	$r = ($_date1 <= $_date2 ? '' : '-');
 
 	//Make sure $date1 is ealier
-	$date1 = ($_date1 <= $_date2 ? $_date1 : $_date2);
-	$date2 = ($_date1 <= $_date2 ? $_date2 : $_date1);
+	$date1 = clone ($_date1 <= $_date2 ? $_date1 : $_date2);
+	$date2 = clone ($_date1 <= $_date2 ? $_date2 : $_date1);
 
 	//Calculate total days difference
-	$total_days = round(abs($date1->format('U') - $date2->format('U'))/86400);
+	$total_days = floor(abs($date1->format('U') - $date2->format('U'))/86400);
 
 	//A leap year work around - consistent with DateInterval
 	$leap_year = ( $date1->format('m-d') == '02-29' ? true : false);
@@ -185,26 +203,61 @@ function eo_date_interval($_date1,$_date2, $format){
 	$seconds = round(abs($date1->format('U') - $date2->format('U')));
 	$minutes = floor($seconds/60);
 	$seconds = $seconds - $minutes*60;
-		
-	$replace = array(
-		'/%y/' => $years,
-		'/%Y/' => zeroise($years,2),
-		'/%m/' => $months,
-		'/%M/' => zeroise($months,2),
-		'/%d/' => $days,
-		'/%D/' => zeroise($days,2),
-		'/%a/' => zeroise($total_days,2),
-		'/%h/' => $hours,
-		'/%H/' => zeroise($hours,2),
-		'/%i/' => $minutes,
-		'/%I/' =>zeroise($minutes,2),
-		'/%s/' => $seconds,
-		'/%S/' => zeroise($seconds,2),
-		'/%r/' => $r,
-		'/%R/' => $R
-	);
 
-	return preg_replace(array_keys($replace), array_values($replace), $format);
+	$chars = str_split( $format );
+	$length = count( $chars );
+	
+	if( $length == 1 ){
+		return $format;
+	}
+	
+	$values = array(
+			'%' => "%",
+			'y' => $years,
+			'Y' => zeroise( $years, 2 ),
+			'm' => $months,
+			'M' => zeroise( $months, 2 ),
+			'd' => $days,
+			'D' => zeroise( $days, 2 ),
+			'a' => $total_days,
+			'h' => $hours,
+			'H' => zeroise( $hours, 2 ),
+			'i' => $minutes,
+			'I' => zeroise( $minutes, 2 ),
+			's' => $seconds,
+			'S' => zeroise( $seconds, 2 ),
+			'r' => $r,
+			'R' => $R,
+	);
+	
+	$result = "";
+	$previous_char_processed =  false;
+	
+	for( $i = 0; $i < $length; $i++ ){
+	
+		if( ( $i > 0 && $chars[$i-1] === '%' ) && !$previous_char_processed ){
+				
+			if( isset( $values[$chars[$i]] ) ){
+				$result .= $values[$chars[$i]];
+				$previous_char_processed = true;
+								
+			}else{
+				$result .= $chars[$i-1].$chars[$i];
+				$previous_char_processed = true;
+			}
+			
+					
+		}elseif( $chars[$i] == '%' ){
+			$previous_char_processed = false;
+			
+		}else{
+			$result .= $chars[$i];
+			$previous_char_processed = true;
+		}
+		//var_dump($result);
+	}
+	
+	return $result;
 }	 
 
 /**
@@ -403,7 +456,7 @@ function _eventorganiser_compare_dates($date1,$date2){
 function _eventorganiser_php52_modify($date='',$modify=''){
 	
 	//Expect e.g. 'Second Monday of +2 month
-	$pattern = '/([a-zA-Z]+)\s([a-zA-Z]+) of \+(\d+) month/';
+	$pattern = '/([a-zA-Z]+)\s([a-zA-Z]+) of ([\+|-]?\d+) month/i';
 	preg_match($pattern, $modify, $matches);
 
 	$ordinal = array_search(strtolower($matches[1]), array('last','first','second','third','fourth') ); //0-4
@@ -451,11 +504,21 @@ function eventorganiser_trim_excerpt($text = '', $excerpt_length=55) {
 	if ( '' == $text ) {
 		$text = get_the_content('');
 		$text = strip_shortcodes( $text );
+		/**
+		 * @ignore
+		 */
 		$text = apply_filters('the_content', $text);
 		$text = str_replace(']]>', ']]&gt;', $text);
 		$text = wp_trim_words( $text, $excerpt_length, '...' );
 	}
-	return apply_filters('eventorganiser_trim_excerpt', $text, $raw_excerpt);
+	/**
+	 * Filter the event's trimmed excerpt string.
+	 *
+	 * @param string $text        The trimmed text.
+	 * @param string $raw_excerpt The text prior to trimming.
+	 */
+	$text = apply_filters('eventorganiser_trim_excerpt', $text, $raw_excerpt);
+	return $text;
 }
 
 
@@ -468,11 +531,73 @@ function eventorganiser_trim_excerpt($text = '', $excerpt_length=55) {
  *@return datetime The corresponding DateTime object.
 */
 function eventorganiser_date_create($datetime_string){
-	$tz = eo_get_blog_timezone();
-	return date_create($datetime_string,$tz);
+	return date_create( $datetime_string, eo_get_blog_timezone() );
 }
 
 
+function eo_check_datetime( $format, $datetime_string, $timezone = false ){
+	
+	$timezone = ( $timezone instanceof DateTimeZone ) ? $timezone : eo_get_blog_timezone();
+	
+	global $wp_locale;
+	
+	//Handle localised am/pm
+	$am = $wp_locale->get_meridiem('am');
+	$AM = $wp_locale->get_meridiem('AM');
+	$pm = $wp_locale->get_meridiem('pm');
+	$PM = $wp_locale->get_meridiem('PM');
+	$datetime_string = str_replace( compact( 'am', 'AM', 'pm', 'PM' ), array( 'am', 'AM', 'pm', 'PM' ), $datetime_string );
+	
+	if ( version_compare(PHP_VERSION, '5.3.0') >= 0 ){
+    	return date_create_from_format( $format, $datetime_string, $timezone );
+	}else{
+		
+		//Workaround for outdated php versions. Limited support, see conversion array below.
+		
+		//Format conversion
+		$format_conversion = array(
+			'Y' => '%Y', 
+			'm'	=> '%m', 'F' => '%B', 
+			'd'	=> '%d', 'j' => '%e',
+			'S' => '%0',
+			'H' => '%H', 'G' => '%k', 'h'=> '%I', 'g' => '%l', 
+			'i' => '%M', 
+			's' => '%S', 
+			'a' => '%p', 'A' => '%P'
+		);
+		
+		$strptime_format = str_replace(
+			array_keys( $format_conversion ),
+			array_values( $format_conversion ),
+			$format
+		);
+		
+		$strptime = strptime( $datetime_string, $strptime_format );
+
+		if( false == $strptime ){
+			return false;
+		}
+		
+		$ymdhis = sprintf(
+				'%04d-%02d-%02d %02d:%02d:%02d',
+				$strptime['tm_year'] + 1900, 
+				$strptime['tm_mon'] + 1,
+				$strptime['tm_mday'],
+				$strptime['tm_hour'],
+				$strptime['tm_min'],
+				$strptime['tm_sec']
+		);
+
+		try {
+			$date = new DateTime( $ymdhis, $timezone );
+			return $date;
+		} catch (Exception $e) {			
+			return false;
+		}
+		
+	}
+		
+}
 /**
  * (Private) Utility function checks a date-time string is formatted correctly (according to the options) 
  * @access private
@@ -691,7 +816,7 @@ function eventorganiser_text_field($args){
 	$max = (  $args['max'] !== false ?  sprintf('max="%d"', $args['max']) : '' );
 	$size = (  !empty($args['size']) ?  sprintf('size="%d"', $args['size']) : '' );
 	$style = (  !empty($args['style']) ?  sprintf('style="%s"', $args['style']) : '' );
-	$placeholder = ( !empty($args['placeholder']) ? sprintf('placeholder="%s"', $args['placeholder']) : '');
+	$placeholder = ( !empty( $args['placeholder'] ) || is_numeric( $args['placeholder'] ) ) ? sprintf('placeholder="%s"', $args['placeholder']) : '';
 	$disabled = ( !empty($args['disabled']) ? 'disabled="disabled"' : '' );
 	$required = ( !empty($args['required']) ? 'required="required"' : '' );
 	
@@ -703,10 +828,12 @@ function eventorganiser_text_field($args){
 			$data .= sprintf( 'data-%s="%s"', esc_attr( $key ), esc_attr( $attr_value ) );
 		}
 	}
+	
+	
 
 	$attributes = array_filter( array($min,$max,$size,$placeholder,$disabled, $disabled, $style, $data ) );
 
-	$html = sprintf('<input type="%s" name="%s" class="%s regular-text ltr" id="%s" value="%s" autocomplete="off" %s /> %s',
+	$html = sprintf('<input type="%s" name="%s" class="%s" id="%s" value="%s" autocomplete="off" %s /> %s',
 		esc_attr( $type ), 
 		esc_attr( $name ),
 		$class,
@@ -1033,18 +1160,38 @@ function eo_blog_is_24(){
 
 	//Check for meridian
 	if( preg_match( '~\b(A.)\b|([^\\\\]A)~i', $time, $matches ) ){
-		$is24 = false;
+		$is_24 = false;
 		
 	//Check for 24 hour format
 	}elseif( preg_match( '~\b(H.)\b|([^\\\\]H)~i', $time ) ){
-		$is24 = true;
+		$is_24 = true;
 		
 	}else{
 		//Assume it isn't
-		$is24 = false;
+		$is_24 = false;
 	}
 
-	return apply_filters( 'eventorganiser_blog_is_24', $is24 );
+	/**
+	 * Filters whether your site's time format is 12 hour or 24 hour.
+	 * 
+	 * This does not affect anything on the front-end, but it is used to determine 
+	 * the format in which times are entered admin-side. If `true` then 24 hour time 
+	 * is used, otherwise 12 hour time is used.
+	 * 
+	 * By default this value is a 'best guess' based on your site's time format
+	 * option in *Settings > General*.
+	 * 
+	 * ### Example
+	 * 
+	 *     //If you want input time to be forced to 12 hour format
+	 *     add_filter( 'eventorganiser_blog_is_24', '__return_false' );
+	 *     //If you want input time to be forced to 24 hour format
+	 *     add_filter( 'eventorganiser_blog_is_24', '__return_true' );
+	 * 
+	 * @param bool $is_24 Is the site's time format option using 12 hour or 24 hour time. 
+	 */
+	$is_24 = apply_filters( 'eventorganiser_blog_is_24', $is_24 );
+	return $is_24;
 }
 
 /**
@@ -1142,6 +1289,7 @@ function eventorganiser_append_dependency( $handle, $dep ){
  * 
  * Commas, semicolons and backslashes are escaped.
  * New lines are appended with a space (why?)
+ * 
  * @ignore
  * @since 2.1
  * @param string $text The string to be escaped
@@ -1154,10 +1302,32 @@ function eventorganiser_escape_ical_text( $text ){
 	$text = str_replace( ";", "\;", $text );
 	$text = str_replace( "\n", "\n ", $text );
 	
+	return $text;
+}
+
+/**
+ * Fold text as per [iCal specifications](http://www.ietf.org/rfc/rfc2445.txt)
+ * 
+ * Lines of text SHOULD NOT be longer than 75 octets, excluding the line
+ * break. Long content lines SHOULD be split into a multiple line
+ * representations using a line "folding" technique. That is, a long
+ * line can be split between any two characters by inserting a CRLF 
+ * immediately followed by a single linear white space character (i.e.,
+ * SPACE, US-ASCII decimal 32 or HTAB, US-ASCII decimal 9). Any sequence
+ * of CRLF followed immediately by a single linear white space character
+ * is ignored (i.e., removed) when processing the content type.
+ *
+ * @ignore
+ * @since 2.7
+ * @param string $text The string to be escaped
+ * @return string The escaped string.
+ */
+function eventorganiser_fold_ical_text( $text ){
+
 	$text_arr = array();
-	
+
 	$lines = ceil( strlen( $text ) / 75 );
-	
+
 	for( $i = 0; $i < $lines; $i++ ){
 		$text_arr[$i] = mb_substr( $text, $i * 75, 75 );
 	}

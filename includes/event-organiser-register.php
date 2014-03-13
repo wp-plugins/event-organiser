@@ -58,6 +58,7 @@ function eventorganiser_register_script() {
 				'gotodate'=>__('go to date','eventorganiser'),
 				'cat'=>__('View all categories','eventorganiser'),
 				'venue'=>__('View all venues','eventorganiser'),
+				'tag'=>__('View all tags','eventorganiser'),
 				//Allow themes to over-ride juqery ui styling and not use images
 				'nextText' => '>',
 				'prevText' => '<'
@@ -402,6 +403,13 @@ function eventorganiser_delete_expired_events(){
 	//Get expired events
 	$events = eo_get_events(array('showrepeats'=>0,'showpastevents'=>1,'eo_interval'=>'expired'));
 	
+	/**
+	 * Filters how long (in seconds) after an event as finished it should be considered expired.
+	 * 
+	 * If enabled in *Settings > Event Organiser > General*, expired events are trashed.
+	 * 
+	 * @param int $time_until_expired Time (in seconds) to wait after an event has finished. Defaults to 24 hours. 
+	 */
 	$time_until_expired = (int) apply_filters( 'eventorganiser_events_expire_time', 24*60*60 );
 	$time_until_expired = max( $time_until_expired, 0 );
 
@@ -554,6 +562,13 @@ function eventorganiser_pointer_load( $hook_suffix ) {
 		$screen_id = get_current_screen()->id;
 
 		//Get pointers for this screen
+		/**
+		 * Filters the user 'pointers' for a specific screen.
+		 *
+		 * The `$screen_id` part of the hook refers to the screen's ID.
+		 *
+		 * @param array $pointers Filters to display on this screen.
+		 */
 		$pointers = apply_filters('eventorganiser_admin_pointers-'.$screen_id, array());
 
 		if( !$pointers || !is_array($pointers) )
@@ -676,9 +691,8 @@ class EO_Admin_Notice_Handler{
 						__('Dismiss this notice','eventorganiser'),
 						__('Dismiss','eventorganiser')
 					);
+			add_action( 'admin_print_footer_scripts', array( __CLASS__, 'print_footer_scripts' ), 11 );
 		}
-        	add_action( 'admin_print_footer_scripts', array( __CLASS__, 'print_footer_scripts' ), 11 );
-
 	}
 
 	/**
