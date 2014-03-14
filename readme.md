@@ -3,8 +3,8 @@
 **Donate link:** http://www.wp-event-organiser.com/donate  
 **Tags:** events, event, event categories, event organizer, events calendar, event management, ical, locations, google map, widget, venues, maps, gigs, shows,  
 **Requires at least:** 3.3  
-**Tested up to:** 3.8-rc-1  
-**Stable tag:** 2.7  
+**Tested up to:** 3.9-b-1  
+**Stable tag:** 2.7.1  
 **License:** GPLv3  
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
@@ -211,6 +211,11 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 
 
 ## Changelog ##
+
+### 2.7.1 ###
+* Fixes bug (2.7) where shortcode tags are ignored
+* Adds blog ID checks on multisites
+* Update "tested up to" version
 
 ### 2.7 ###
 * Alteration to default single event page to adapt layout on small screens.
@@ -481,7 +486,7 @@ More information on shortcodes is [available here](http://wp-event-organiser.com
 ### 1.6.3 ###
  * Fixes 'EOAjax is not defined' error (see [https://github.com/stephenh1988/Event-Organiser/issues/20](https://github.com/stephenh1988/Event-Organiser/issues/27))
 
-### 1.6. 2 ###
+### 1.6.2 ###
 * Fixes 'zoom' bug for venue maps (see [https://github.com/stephenh1988/Event-Organiser/issues/20](https://github.com/stephenh1988/Event-Organiser/issues/20))
 * Fixes yes/no label error for 'are current events past?' (see [https://github.com/stephenh1988/Event-Organiser/issues/23](https://github.com/stephenh1988/Event-Organiser/issues/23))
 * Adds a condensed jQuery UI for frontend css (see [https://github.com/stephenh1988/Event-Organiser/issues/22](https://github.com/stephenh1988/Event-Organiser/issues/22))
