@@ -565,7 +565,7 @@ function eo_check_datetime( $format, $datetime_string, $timezone = false ){
 			'm'	=> '%m', 'F' => '%B', 
 			'd'	=> '%d', 'j' => '%e',
 			'S' => '%0',
-			'H' => '%H', 'G' => '%k', 'h'=> '%I', 'g' => '%l', 
+			'H' => '%H', 'G' => '%H', 'h'=> '%I', 'g' => '%I', 
 			'i' => '%M', 
 			's' => '%S', 
 			'a' => '%p', 'A' => '%P'
@@ -1168,11 +1168,11 @@ function eo_blog_is_24(){
 		$is_24 = false;
 		
 	//Check for 24 hour format
-	}elseif( preg_match( '~\b(H.)\b|([^\\\\]H)~i', $time ) ){
+	}elseif( strpos( $time, 'H' ) > -1 || strpos( $time, 'G' ) > -1  ){
 		$is_24 = true;
-		
+
+	//Assume it isn't
 	}else{
-		//Assume it isn't
 		$is_24 = false;
 	}
 

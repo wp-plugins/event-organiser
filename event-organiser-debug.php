@@ -31,7 +31,7 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 		
 		
 		$eo_debugger = new EventOrganiser_Debugger();
-		$eo_debugger->set_prequiste( 'WordPress', '3.3', '3.6.1');
+		$eo_debugger->set_prequiste( 'WordPress', '3.3', '3.9.1');
 		//$eo_debugger->set_known_plugin_conflicts();
 		//$eo_debugger->set_known_theme_conflicts();
 		$eo_debugger->set_db_tables( 'eo_events', 'eo_venuemeta' );
@@ -237,6 +237,14 @@ class EventOrganiser_Debug_Page extends EventOrganiser_Admin_Page
 				<tr>
 					<th> Language </th>
 					<td><?php echo defined( 'WP_LANG' ) && WP_LANG ? WP_LANG : 'en_us'; ?></td>
+				</tr>
+				<tr>
+					<th> Date Format </th>
+					<td><?php echo get_option( 'date_format' ); ?></td>
+				</tr>
+				<tr>
+					<th> Time Format </th>
+					<td><?php echo get_option( 'time_format' ); ?></td>
 				</tr>
 		</table>
 		<?php 
@@ -517,7 +525,7 @@ class EventOrganiser_Debugger{
 		
 		echo 'Event Organiser' . "\t\t" . EVENT_ORGANISER_VER . "\n";
 		if( $this->jquery_version )
-			echo 'jQuery Version' . "\t\t" . EVENT_ORGANISER_VER . "\n";
+			echo 'jQuery Version' . "\t\t" . $this->jquery_version . "\n";
 		echo 'WordPress' . "\t\t\t" . get_bloginfo( 'version' ) ."\n";
 		echo 'PHP Version' . "\t\t\t" . PHP_VERSION ."\n";
 		echo 'MySQL Version' . "\t\t" . mysql_get_server_info() ."\n";
@@ -554,7 +562,9 @@ class EventOrganiser_Debugger{
 		echo '### Site Settings ###' . "\n";
 		echo 'Timezone' . "\t\t\t" . eo_get_blog_timezone()->getName() . sprintf( ' ( %s / %s ) ', get_option( 'gmt_offset' ), get_option( 'timezone_string' ) ) . "\n";
 		echo 'WP Cron' . "\t\t\t" . ( $this->get_cron_status() == 0 ? 'Disabled' :  ( $this->get_cron_status() == 1 ? 'Enabled' : 'Alternative ') ) . "\n";
-		echo 'WP Lang' . "\t\t\t" . ( defined( 'WP_LANG' ) && WP_LANG ? WP_LANG : 'en_us' );
+		echo 'WP Lang' . "\t\t\t" . ( defined( 'WP_LANG' ) && WP_LANG ? WP_LANG : 'en_us' ) . "\n";
+		echo 'Date format' . "\t\t" . get_option( 'date_format' ) . "\n";
+		echo 'Time format' . "\t\t" . get_option( 'time_format' );
 							
 		echo "\n";
 		echo "\n";
