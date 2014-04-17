@@ -555,7 +555,7 @@ function eo_check_datetime( $format, $datetime_string, $timezone = false ){
 
 	if ( version_compare(PHP_VERSION, '5.3.0') >= 0 ){
     	return date_create_from_format( $format, $datetime_string, $timezone );
-	}else{
+	}elseif( function_exists( 'strptime' ) ){
 		
 		//Workaround for outdated php versions. Limited support, see conversion array below.
 		
@@ -600,6 +600,52 @@ function eo_check_datetime( $format, $datetime_string, $timezone = false ){
 			return false;
 		}
 		
+	}else{
+
+		//Workaround for outdated php versions without strptime. Limited support, see conversion array below.
+		
+		//Format conversion
+		$format_conversion = array(
+				'Y' => '(?P<year>\d{4})',
+				'm'	=> '(?P<month>\d{1,})', 
+				'd'	=> '(?P<day>\d{1,})', 
+				'H' => '(?P<hour>\d{2})', 
+				'G' => '(?P<hour>\d{1,2})',
+				'h' => '(?P<hour>\d{2})', 
+				'g' => '(?P<hour>\d{1,2})',
+				'i' => '(?P<minute>\d{1,2})',
+				's' => '(?P<second>\d{1,2})',
+				'a' => '(?P<meridan>(am|pm))',
+				'A' => '(?P<meridan>(AM|PM))'
+		);
+		
+		$reg_exp = "/^" . strtr( $format, $format_conversion ) . "$/";
+		
+		if( !preg_match( $reg_exp, $datetime_string, $matches ) ){
+			return false;
+		}
+		
+		$meridan    = isset( $matches['meridan'] ) ? strtolower( $matches['meridan'] ) : false;
+		$components = eo_array_key_whitelist( $matches, array( 'year', 'month', 'day', 'hour', 'minute', 'second' ) );
+		extract( array_map( 'intval', $components ) );
+		
+		if ( !checkdate( $month, $day, $year ) ){
+			return false;
+		}
+		
+		$datetime = new DateTime( null, $timezone );
+		$datetime->setDate( $year, $month, $day );
+		
+		if( isset( $hour ) && isset( $minute ) ){
+			if( $hour < 0 || $hour > 23 || $minute < 0 || $minute > 59 ){
+				return false;
+			}
+			$hour = ( $meridan === 'pm' && $hour < 12 ) ? $hour + 12 : $hour; //acount for 12 hour time
+			$datetime->setTime( $hour, $minute );
+		}
+		
+		return $datetime;
+	
 	}
 		
 }
@@ -960,7 +1006,7 @@ function eventorganiser_textarea_field($args){
 	$id = ( !empty($args['id']) ? $args['id'] : $args['label_for']);
 	$name = isset($args['name']) ?  $args['name'] : '';
 	$value = $args['value'];
-	$class = $args['class'];
+	$class = implode( ' ', array_map( 'sanitize_html_class', explode( ' ', $args['class'] ) ) );
 	$readonly = $args['readonly'] ? 'readonly' : '';
 	$html ='';
 
@@ -976,11 +1022,11 @@ function eventorganiser_textarea_field($args){
 		$html .= ob_get_contents();
 		ob_end_clean();
 	}else{
-		$html .= sprintf('<textarea cols="%s" rows="%d" name="%s" class="%s large-text" id="%s" %s >%s</textarea>',
+		$html .= sprintf('<textarea cols="%s" rows="%d" name="%s" class="%s" id="%s" %s >%s</textarea>',
 				intval($args['cols']),
 				intval($args['rows']),
 				esc_attr($name),
-				sanitize_html_class($class),
+				$class,
 				esc_attr($id),
 				$readonly,
 				esc_textarea($value)
@@ -1361,4 +1407,16 @@ function eo_list_pluck_key_value( $list, $key_field, $value_field ){
 	} 
 	
 	return $new_list;
+}
+
+/**
+ * Given an array, it returns only the values whose key exists in 
+ * a given key whitelist.
+ * 
+ * @param array $array The array for which we wish to weed out non whitelisted values.
+ * @param array $whitelist An array of permissable keys.
+ * @return array The original array with non-permissable keys removed
+ */
+function eo_array_key_whitelist( $array, $whitelist = array() ){
+	return array_intersect_key( $array, array_flip( $whitelist ) );
 }
