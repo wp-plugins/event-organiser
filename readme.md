@@ -3,8 +3,8 @@
 **Donate link:** http://www.wp-event-organiser.com/donate  
 **Tags:** events, event, event categories, event organizer, events calendar, event management, ical, locations, google map, widget, venues, maps, gigs, shows,  
 **Requires at least:** 3.3  
-**Tested up to:** 3.9.2  
-**Stable tag:** 2.8.5  
+**Tested up to:** 4.0.0  
+**Stable tag:** 2.8.6  
 **License:** GPLv3  
 
 Create and maintain events, including complex reoccurring patterns, venue management (with Google maps), calendars and customisable event lists
@@ -111,7 +111,7 @@ A big thank you to those who have provided translations for Event Organiser. If 
 * Russian - [Sergei](www.vortexinter.ru)
 * Slovak - ViRPo
 * Slovenian - Matej
-* Spanish (Spain)- Joseba Sanchez, jagarre, jelena kovacevic
+* Spanish (Spain)- Joseba Sanchez, jagarre, jelena kovacevic, courtesy of [WebHostingHub](http://www.webhostinghub.com/)
 * Spanish (Peru) - Pedro Valverde
 * Swedish - Sofia BrÃ¥vander, Urban Norlander
 * Thai - Nibhon, Wuttichai Songprapai
