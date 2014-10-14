@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 12:14+0100\n"
+"POT-Creation-Date: 2014-10-14 23:14+0100\n"
 "PO-Revision-Date: 2014-06-09 19:27:10+0000\n"
 "Last-Translator: Daniele Piccoli <daniepi@gmail.com>\n"
 "Language-Team: \n"
@@ -10,6 +10,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: classes/class-eo-agenda-widget.php:11
 msgid "Displays a list of events, grouped by date"
@@ -122,6 +123,7 @@ msgid "Number of events"
 msgstr "Numero di eventi"
 
 #: classes/class-eo-event-list-widget.php:55
+#: includes/event-organiser-cpt.php:32
 msgid "Venue"
 msgstr "Luogo"
 
@@ -434,14 +436,12 @@ msgstr ""
 "minimi o avere una semplice soluzione. Ti preghiamo di contattare il "
 "supporto."
 
-# / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #. / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #: event-organiser-debug.php:430
 #, php-format
 msgid "%s has only been tested up to %s %s"
 msgstr "%s &egrave; stato testato solamente fino alla versione %s %s"
 
-# / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #. / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #: event-organiser-debug.php:439
 #, php-format
@@ -556,7 +556,7 @@ msgstr "Seleziona un luogo"
 msgid "Venue Name"
 msgstr "Nome del luogo"
 
-#: event-organiser-edit.php:413
+#: event-organiser-edit.php:410
 msgid "Event dates were not saved."
 msgstr "Le date dell'evento non sono state salvate"
 
@@ -1056,6 +1056,9 @@ msgid "Venue(s) <strong>deleted</strong>"
 msgstr "Il luogo <strong>&egrave; stato cancellato</strong>"
 
 #: event-organiser-venues.php:255 event-organiser-venues.php:294
+#: includes/event-organiser-cpt.php:219
+#, fuzzy
+msgctxt "post"
 msgid "Add New"
 msgstr "Aggiungi"
 
@@ -1107,22 +1110,22 @@ msgstr ""
 msgid "There was an error opening the ICAL file."
 msgstr "Si è verificato un errore nell'apertura del file ICAL"
 
-#: includes/class-eo-ical-parser.php:488 includes/class-eo-ical-parser.php:513
+#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
 #, php-format
 msgid "[Lines %1$d-%2$d]"
 msgstr "[Righe %1$d-%2$d]"
 
-#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
+#: includes/class-eo-ical-parser.php:502 includes/class-eo-ical-parser.php:527
 #, php-format
 msgid "[Line %1$d]"
 msgstr "[Riga %1$d]"
 
-#: includes/class-eo-ical-parser.php:874
+#: includes/class-eo-ical-parser.php:885
 #, fuzzy, php-format
 msgid "Invalid date \"%s\". Date expected in YYYYMMDD format."
 msgstr "Data non valida. La data deve essere nel formato YYYYMMDD."
 
-#: includes/class-eo-ical-parser.php:912
+#: includes/class-eo-ical-parser.php:923
 #, php-format
 msgid ""
 "Invalid datetime \"%s\". Date expected in YYYYMMDDTHHiissZ or "
@@ -1328,6 +1331,12 @@ msgstr "Luogo"
 msgid "No Venue"
 msgstr "Nessun luogo"
 
+#: includes/event-organiser-cpt.php:93
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Category"
+msgstr "Categorie"
+
 #: includes/event-organiser-cpt.php:94
 msgid "Search Categories"
 msgstr "Categorie di ricerca"
@@ -1364,6 +1373,12 @@ msgstr "Nuova categoria"
 #: includes/event-organiser-cpt.php:102
 msgid "No categories found"
 msgstr "Nessuna categoria"
+
+#: includes/event-organiser-cpt.php:147
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Tag"
+msgstr "Tag"
 
 #: includes/event-organiser-cpt.php:148
 msgid "Search Tags"
@@ -1921,7 +1936,6 @@ msgstr "L'evento non prevede nessuna data."
 msgid "Occurrence not deleted. Occurrence not found."
 msgstr "Occorrenza non cancellata. Occorrenza non trovata."
 
-# / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #. / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #: includes/i18n.php:8
 msgid ""
