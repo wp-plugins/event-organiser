@@ -2,18 +2,19 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 12:14+0100\n"
-"PO-Revision-Date: 2014-09-10 02:40:26+0000\n"
-"Last-Translator: NathanR <nathan.rabeau@gmail.com>\n"
+"POT-Creation-Date: 2014-10-14 23:14+0100\n"
+"PO-Revision-Date: 2014-09-25 12:05:01+0000\n"
+"Last-Translator: egrefin <egrefin@wanadoo.fr>\n"
 "Language-Team: \n"
 "Language: French (France)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #: classes/class-eo-agenda-widget.php:11
 msgid "Displays a list of events, grouped by date"
-msgstr "Affiche une list des événements, groupés par date"
+msgstr "Affiche une liste des événements, groupés par date"
 
 #: classes/class-eo-agenda-widget.php:19
 msgid "Events Agenda"
@@ -115,13 +116,14 @@ msgstr "Affiche une liste d'événements"
 #: includes/event-organiser-cpt.php:229
 #: includes/event-organiser-install.php:96 templates/archive-event.php:42
 msgid "Events"
-msgstr "Evénements"
+msgstr "Événements"
 
 #: classes/class-eo-event-list-widget.php:44
 msgid "Number of events"
 msgstr "Nombre d'événements"
 
 #: classes/class-eo-event-list-widget.php:55
+#: includes/event-organiser-cpt.php:32
 msgid "Venue"
 msgstr "Lieu"
 
@@ -209,7 +211,7 @@ msgstr "Sélectionner une catégorie"
 #: classes/class-eo-widget-categories.php:125
 #: classes/class-eo-widget-venues.php:127
 msgid "Title:"
-msgstr "Titre:"
+msgstr "Titre :"
 
 #: classes/class-eo-widget-categories.php:129
 #: classes/class-eo-widget-venues.php:131
@@ -444,14 +446,12 @@ msgstr ""
 "Les conflits connus entre plug-in et thème, figurés en rouge, peuvent être "
 "mineurs ou bien être résolus simplement. Contactez le support du plugin SVP."
 
-# / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #. / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #: event-organiser-debug.php:430
 #, php-format
 msgid "%s has only been tested up to %s %s"
 msgstr "%s a seulement été testé jusqu'à %s %s"
 
-# / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #. / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #: event-organiser-debug.php:439
 #, php-format
@@ -479,11 +479,15 @@ msgstr "Cochez pour éditer cet événement et ses répétitions"
 #, php-format
 msgid "Ensure dates are entered in %1$s format and times in 24 hour format"
 msgstr ""
+"Assurez-vous que les dates sont entrées au format %1$s et les heures sur 24 "
+"heures"
 
 #: event-organiser-edit.php:100
 #, php-format
 msgid "Ensure dates are entered in %1$s format and times in 12 hour format"
 msgstr ""
+"Assurez-vous que les dates sont entrées au format %1$s et les heures sur 12 "
+"heures"
 
 #: event-organiser-edit.php:107 event-organiser-manage.php:36
 msgid "Start Date/Time"
@@ -565,7 +569,7 @@ msgstr "Choisir un lieu"
 msgid "Venue Name"
 msgstr "Nom du Lieu"
 
-#: event-organiser-edit.php:413
+#: event-organiser-edit.php:410
 msgid "Event dates were not saved."
 msgstr "Les dates de l'événement n'ont pas été sauvegardées"
 
@@ -642,7 +646,7 @@ msgstr "Aller aux réglages de Event Organizer"
 
 #: event-organiser-manage.php:19 includes/event-organiser-cpt.php:218
 msgid "Event"
-msgstr "Evénement"
+msgstr "Événement"
 
 #: event-organiser-manage.php:38
 msgid "Reoccurrence"
@@ -658,33 +662,33 @@ msgstr "Prochains événements"
 
 #: event-organiser-manage.php:155
 msgid "Expired events"
-msgstr "Evénements terminés"
+msgstr "Événements terminés"
 
 #: event-organiser-manage.php:156
 msgid "Events within 24 hours"
-msgstr "Evénements dans les 24 heures"
+msgstr "Événements dans les 24 heures"
 
 #: event-organiser-manage.php:157
 msgid "Events within 1 week"
-msgstr "Evénements dans la semaine"
+msgstr "Événements dans la semaine"
 
 #: event-organiser-manage.php:158
 #, php-format
 msgid "Events within %d weeks"
-msgstr "Evénements dans les %d semaines"
+msgstr "Événements dans les %d semaines"
 
 #: event-organiser-manage.php:159
 msgid "Events within 1 month"
-msgstr "Evénements dans le mois"
+msgstr "Événements dans le mois"
 
 #: event-organiser-manage.php:160
 #, php-format
 msgid "Events within %d months"
-msgstr "Evénements dans les %d mois"
+msgstr "Événements dans les %d mois"
 
 #: event-organiser-manage.php:161
 msgid "Events within 1 year"
-msgstr "Evénements dans l'année"
+msgstr "Événements dans l'année"
 
 #: event-organiser-manage.php:212
 msgid "&mdash; No Change &mdash;"
@@ -721,7 +725,7 @@ msgstr "Event Organiser"
 #: event-organiser-settings.php:46 event-organiser.php:105
 #: includes/event-organiser-install.php:112
 msgid "Edit Events"
-msgstr "Editer des événements"
+msgstr "Éditer des événements"
 
 #: event-organiser-settings.php:47 event-organiser.php:106
 #: includes/event-organiser-install.php:113
@@ -736,7 +740,7 @@ msgstr "Effacer des événements"
 #: event-organiser-settings.php:49 event-organiser.php:108
 #: includes/event-organiser-install.php:115
 msgid "Edit Others' Events"
-msgstr "Editer des événements d'autres personnes"
+msgstr "Éditer des événements d'autres personnes"
 
 #: event-organiser-settings.php:50 event-organiser.php:109
 #: includes/event-organiser-install.php:116
@@ -960,7 +964,7 @@ msgstr "Evénement (simple)"
 
 #: event-organiser-settings.php:293
 msgid "Events page"
-msgstr ""
+msgstr "Page des événements"
 
 #: event-organiser-settings.php:306
 msgid "Event (date archive)"
@@ -1068,6 +1072,9 @@ msgid "Venue(s) <strong>deleted</strong>"
 msgstr "Lieu(x) <strong>effacé(s)</strong>"
 
 #: event-organiser-venues.php:255 event-organiser-venues.php:294
+#: includes/event-organiser-cpt.php:219
+#, fuzzy
+msgctxt "post"
 msgid "Add New"
 msgstr "Ajouter nouveau"
 
@@ -1078,7 +1085,7 @@ msgstr "Résultats de recherche pour &#8220;%s&#8221;"
 
 #: event-organiser-venues.php:417
 msgid "Latitude/Longitude:"
-msgstr ""
+msgstr "Latitude/Longitude :"
 
 #: event-organiser-venues.php:445
 msgid "Venue name"
@@ -1118,22 +1125,22 @@ msgstr ""
 msgid "There was an error opening the ICAL file."
 msgstr "Erreur à l'ouverture du fichier ICAL."
 
-#: includes/class-eo-ical-parser.php:488 includes/class-eo-ical-parser.php:513
+#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
 #, php-format
 msgid "[Lines %1$d-%2$d]"
 msgstr "[Lignes %1$d-%2$d]"
 
-#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
+#: includes/class-eo-ical-parser.php:502 includes/class-eo-ical-parser.php:527
 #, php-format
 msgid "[Line %1$d]"
 msgstr "[Ligne %1$d]"
 
-#: includes/class-eo-ical-parser.php:874
+#: includes/class-eo-ical-parser.php:885
 #, php-format
 msgid "Invalid date \"%s\". Date expected in YYYYMMDD format."
 msgstr "Date invalide \"%s\". Date attendue dans le format YYYYMMDD."
 
-#: includes/class-eo-ical-parser.php:912
+#: includes/class-eo-ical-parser.php:923
 #, php-format
 msgid ""
 "Invalid datetime \"%s\". Date expected in YYYYMMDDTHHiissZ or "
@@ -1272,7 +1279,7 @@ msgstr "Cet événement se répète"
 
 #: includes/event-organiser-ajax.php:431 includes/event-organiser-cpt.php:221
 msgid "Edit Event"
-msgstr "Editer un événement"
+msgstr "Éditer un événement"
 
 #: includes/event-organiser-ajax.php:450
 msgid "Delete this occurrence"
@@ -1340,6 +1347,12 @@ msgstr "Lieu"
 msgid "No Venue"
 msgstr "Aucun lieu"
 
+#: includes/event-organiser-cpt.php:93
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Category"
+msgstr "Catégories"
+
 #: includes/event-organiser-cpt.php:94
 msgid "Search Categories"
 msgstr "Chercher dans les catégories"
@@ -1359,7 +1372,7 @@ msgstr "Catégorie parente"
 
 #: includes/event-organiser-cpt.php:98
 msgid "Edit Category"
-msgstr "Editer la catégorie"
+msgstr "Éditer la catégorie"
 
 #: includes/event-organiser-cpt.php:99
 msgid "Update Category"
@@ -1377,6 +1390,12 @@ msgstr "Nom de la nouvelle catégorie"
 msgid "No categories found"
 msgstr "Aucune catégorie trouvée"
 
+#: includes/event-organiser-cpt.php:147
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Tag"
+msgstr "Mots-clefs"
+
 #: includes/event-organiser-cpt.php:148
 msgid "Search Tags"
 msgstr "Chercher dans les mots-clefs"
@@ -1391,7 +1410,7 @@ msgstr "Mots-clefs populaires"
 
 #: includes/event-organiser-cpt.php:151
 msgid "Edit Tag"
-msgstr "Editer le mot-clef"
+msgstr "Éditer le mot-clef"
 
 #: includes/event-organiser-cpt.php:152
 msgid "Update Tag"
@@ -1429,7 +1448,7 @@ msgstr "Séparer les mots-clefs par des virgules"
 
 #: includes/event-organiser-cpt.php:161
 msgid "View all tags"
-msgstr ""
+msgstr "Voir tous les mots-clefs"
 
 #: includes/event-organiser-cpt.php:220
 msgid "Add New Event"
@@ -1462,7 +1481,7 @@ msgstr "Aucun événement trouvé dans la corbeille"
 #: includes/event-organiser-cpt.php:310
 #, php-format
 msgid "Event updated. <a href=\"%s\">View event</a>"
-msgstr "Evénement mis à jour. <a href=\"%s\">Voir l'événement</a>"
+msgstr "Événement mis à jour. <a href=\"%s\">Voir l'événement</a>"
 
 #: includes/event-organiser-cpt.php:311
 msgid "Custom field updated."
@@ -1474,27 +1493,27 @@ msgstr "Champ personnalisé supprimé."
 
 #: includes/event-organiser-cpt.php:313
 msgid "Event updated."
-msgstr "Evénement mis à jour."
+msgstr "Événement mis à jour."
 
 #: includes/event-organiser-cpt.php:315
 #, php-format
 msgid "Event restored to revision from %s"
-msgstr "Evénement restauré à la révision du %s"
+msgstr "Événement restauré à la révision du %s"
 
 #: includes/event-organiser-cpt.php:316
 #, php-format
 msgid "Event published. <a href=\"%s\">View event</a>"
-msgstr "Evénement publié. <a href=\"%s\">Voir l'événement</a>"
+msgstr "Événement publié. <a href=\"%s\">Voir l'événement</a>"
 
 #: includes/event-organiser-cpt.php:317
 msgid "Event saved."
-msgstr "Evénement sauvegardé."
+msgstr "Événement sauvegardé."
 
 #: includes/event-organiser-cpt.php:318
 #, php-format
 msgid "Event submitted. <a target=\"_blank\" href=\"%s\">Preview event</a>"
 msgstr ""
-"Evénement soumis. <a target=\"_blank\" href=\"%s\">Prévisualiser "
+"Événement soumis. <a target=\"_blank\" href=\"%s\">Prévisualiser "
 "l'événement</a>"
 
 #: includes/event-organiser-cpt.php:319
@@ -1503,7 +1522,7 @@ msgid ""
 "Event scheduled for: <strong>%1$s</strong>. <a target=\"_blank\" href=\"%2$s"
 "\">Preview event</a>"
 msgstr ""
-"Evénement programmé pour le : <strong>%1$s</strong>. <a target=\"_blank\" "
+"Événement programmé pour le : <strong>%1$s</strong>. <a target=\"_blank\" "
 "href=\"%2$s\">Prévisualiser l'événement</a>"
 
 #: includes/event-organiser-cpt.php:321
@@ -1527,7 +1546,7 @@ msgstr "Création d'événements"
 
 #: includes/event-organiser-cpt.php:517
 msgid "Creating events:"
-msgstr "Création d'événements : "
+msgstr "Création d'événements :"
 
 #: includes/event-organiser-cpt.php:519
 msgid ""
@@ -1555,7 +1574,7 @@ msgstr ""
 
 #: includes/event-organiser-cpt.php:526
 msgid "Repeating events"
-msgstr "Evénement récurrents"
+msgstr "Évènement récurrents"
 
 #: includes/event-organiser-cpt.php:527
 msgid ""
@@ -1645,7 +1664,7 @@ msgid ""
 "Edit takes you to the editing screen for that venue. You can also reach that "
 "screen by clicking on the venue title."
 msgstr ""
-"Editer vous dirige vers la page d'édition pour ce lieu. Vous pouvez "
+"Éditer vous dirige vers la page d'édition pour ce lieu. Vous pouvez "
 "également y accéder en cliquant sur le titre du lieu."
 
 #: includes/event-organiser-cpt.php:561
@@ -1874,7 +1893,7 @@ msgid ""
 "haven't and want the old templates back, <a href='http://wp-event-organiser."
 "com/blog/new-default-templates-in-1-7'>see this post<a/>."
 msgstr ""
-"<h4>Les Templates par défaut ont été modifiés</h4>Ne craignez rien! Si vous "
+"<h4>Les Templates par défaut ont été modifiés</h4>Ne craignez rien ! Si vous "
 "avez configuré vos propres templates dans votre thème, vous ne verrez aucune "
 "différence. </br> Si vous ne l'avez pas fait, et que vous souhaitiez revenir "
 "aux anciens templates, <a href='http://wp-event-organiser.com/blog/new-"
@@ -1898,7 +1917,7 @@ msgstr "Ville"
 
 #: includes/event-organiser-venue-functions.php:955
 msgid "State / Province"
-msgstr "Etat / Province"
+msgstr "État / Province"
 
 #: includes/event-organiser-venue-functions.php:956
 msgid "Post Code"
@@ -1936,7 +1955,6 @@ msgstr "L'événement n'est associé à aucune date."
 msgid "Occurrence not deleted. Occurrence not found."
 msgstr "L'occurence n'est pas supprimée, elle n'a pu être trouvée."
 
-# / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #. / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #: includes/i18n.php:8
 msgid ""
@@ -1947,7 +1965,7 @@ msgstr ""
 #: templates/archive-event.php:34 templates/archive-event.php:37
 #: templates/archive-event.php:40
 msgid "Events: "
-msgstr "Evénements :"
+msgstr "Événements :"
 
 #: templates/archive-event.php:55 templates/archive-event.php:110
 #: templates/taxonomy-event-category.php:48
@@ -1956,7 +1974,7 @@ msgstr "Evénements :"
 #: templates/taxonomy-event-venue.php:48
 #: templates/taxonomy-event-venue.php:105
 msgid "Later events <span class=\"meta-nav\">&rarr;</span>"
-msgstr "Evénements suivants <span class=\"meta-nav\">&rarr;</span>"
+msgstr "Événements suivants <span class=\"meta-nav\">&rarr;</span>"
 
 #: templates/archive-event.php:56 templates/archive-event.php:111
 #: templates/taxonomy-event-category.php:49
@@ -2040,7 +2058,7 @@ msgstr ""
 #: templates/taxonomy-event-venue.php:31
 #, php-format
 msgid "Events at: %s"
-msgstr "Evénements ayant lieu à : %s"
+msgstr "Événements ayant lieu à : %s"
 
 #: templates/taxonomy-event-venue.php:118
 msgid "Apologies, but no events were found for the requested venue. "

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 12:14+0100\n"
+"POT-Creation-Date: 2014-10-14 23:14+0100\n"
 "PO-Revision-Date: 2013-12-04 20:12:37+0000\n"
 "Last-Translator: stephenharris <stephenh1988@gmail.com>\n"
 "Language-Team: \n"
@@ -119,6 +119,7 @@ msgid "Number of events"
 msgstr ""
 
 #: classes/class-eo-event-list-widget.php:55
+#: includes/event-organiser-cpt.php:32
 msgid "Venue"
 msgstr ""
 
@@ -553,7 +554,7 @@ msgstr ""
 msgid "Venue Name"
 msgstr ""
 
-#: event-organiser-edit.php:413
+#: event-organiser-edit.php:410
 msgid "Event dates were not saved."
 msgstr ""
 
@@ -1011,6 +1012,8 @@ msgid "Venue(s) <strong>deleted</strong>"
 msgstr ""
 
 #: event-organiser-venues.php:255 event-organiser-venues.php:294
+#: includes/event-organiser-cpt.php:219
+msgctxt "post"
 msgid "Add New"
 msgstr ""
 
@@ -1060,22 +1063,22 @@ msgstr ""
 msgid "There was an error opening the ICAL file."
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:488 includes/class-eo-ical-parser.php:513
+#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
 #, php-format
 msgid "[Lines %1$d-%2$d]"
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
+#: includes/class-eo-ical-parser.php:502 includes/class-eo-ical-parser.php:527
 #, php-format
 msgid "[Line %1$d]"
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:874
+#: includes/class-eo-ical-parser.php:885
 #, php-format
 msgid "Invalid date \"%s\". Date expected in YYYYMMDD format."
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:912
+#: includes/class-eo-ical-parser.php:923
 #, php-format
 msgid ""
 "Invalid datetime \"%s\". Date expected in YYYYMMDDTHHiissZ or "
@@ -1273,6 +1276,11 @@ msgstr ""
 msgid "No Venue"
 msgstr ""
 
+#: includes/event-organiser-cpt.php:93
+msgctxt "taxonomy singular name"
+msgid "Category"
+msgstr ""
+
 #: includes/event-organiser-cpt.php:94
 msgid "Search Categories"
 msgstr ""
@@ -1307,6 +1315,11 @@ msgstr ""
 
 #: includes/event-organiser-cpt.php:102
 msgid "No categories found"
+msgstr ""
+
+#: includes/event-organiser-cpt.php:147
+msgctxt "taxonomy singular name"
+msgid "Tag"
 msgstr ""
 
 #: includes/event-organiser-cpt.php:148

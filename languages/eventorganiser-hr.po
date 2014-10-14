@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-16 12:14+0100\n"
+"POT-Creation-Date: 2014-10-14 23:14+0100\n"
 "PO-Revision-Date: 2013-12-04 20:12:37+0000\n"
 "Last-Translator: stephenharris <stephenh1988@gmail.com>\n"
 "Language-Team: \n"
@@ -10,6 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: classes/class-eo-agenda-widget.php:11
 msgid "Displays a list of events, grouped by date"
@@ -119,6 +121,7 @@ msgid "Number of events"
 msgstr "Broj događaja"
 
 #: classes/class-eo-event-list-widget.php:55
+#: includes/event-organiser-cpt.php:32
 msgid "Venue"
 msgstr "Sastajalište"
 
@@ -433,14 +436,12 @@ msgstr ""
 "Poznati problemi priključaka i tema, označeno sa crvenom, može biti manji "
 "problem ili jednostavno riješenje. Molimo kontaktirajte podršku"
 
-# / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #. / TRANSLATORS: [this plugin] has only been tested up to [required plugin] [required plugin version]
 #: event-organiser-debug.php:430
 #, php-format
 msgid "%s has only been tested up to %s %s"
 msgstr "%s testirano je do %s %s"
 
-# / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #. / TRANSLATORS: [this plugin] requires [required plugin] version [required plugin version] or higher
 #: event-organiser-debug.php:439
 #, php-format
@@ -554,7 +555,7 @@ msgstr "Izaberi sastajalište"
 msgid "Venue Name"
 msgstr "Naziv sastajališta"
 
-#: event-organiser-edit.php:413
+#: event-organiser-edit.php:410
 msgid "Event dates were not saved."
 msgstr "Datum događanja nije spremljen."
 
@@ -1036,6 +1037,9 @@ msgid "Venue(s) <strong>deleted</strong>"
 msgstr "Sastajalište/a<strong>obrisana</strong>"
 
 #: event-organiser-venues.php:255 event-organiser-venues.php:294
+#: includes/event-organiser-cpt.php:219
+#, fuzzy
+msgctxt "post"
 msgid "Add New"
 msgstr "Dodaj novi"
 
@@ -1085,22 +1089,22 @@ msgstr ""
 msgid "There was an error opening the ICAL file."
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:488 includes/class-eo-ical-parser.php:513
+#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
 #, php-format
 msgid "[Lines %1$d-%2$d]"
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:495 includes/class-eo-ical-parser.php:520
+#: includes/class-eo-ical-parser.php:502 includes/class-eo-ical-parser.php:527
 #, php-format
 msgid "[Line %1$d]"
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:874
+#: includes/class-eo-ical-parser.php:885
 #, php-format
 msgid "Invalid date \"%s\". Date expected in YYYYMMDD format."
 msgstr ""
 
-#: includes/class-eo-ical-parser.php:912
+#: includes/class-eo-ical-parser.php:923
 #, php-format
 msgid ""
 "Invalid datetime \"%s\". Date expected in YYYYMMDDTHHiissZ or "
@@ -1303,6 +1307,12 @@ msgstr "Sastajalište"
 msgid "No Venue"
 msgstr "Nema sastajališta"
 
+#: includes/event-organiser-cpt.php:93
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Category"
+msgstr "Kategorije"
+
 #: includes/event-organiser-cpt.php:94
 msgid "Search Categories"
 msgstr "Pretraži kategorije"
@@ -1339,6 +1349,12 @@ msgstr "Novo ime kategorije"
 #: includes/event-organiser-cpt.php:102
 msgid "No categories found"
 msgstr "Nijedna kategorija nije pronađena"
+
+#: includes/event-organiser-cpt.php:147
+#, fuzzy
+msgctxt "taxonomy singular name"
+msgid "Tag"
+msgstr "Oznake"
 
 #: includes/event-organiser-cpt.php:148
 msgid "Search Tags"
@@ -1893,7 +1909,6 @@ msgstr ""
 msgid "Occurrence not deleted. Occurrence not found."
 msgstr ""
 
-# / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #. / TRANSLATORS: This is the description that of the plug-in that appears in the "Plugins" page.
 #: includes/i18n.php:8
 msgid ""
