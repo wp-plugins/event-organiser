@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-12-22 12:03+0000\n"
+"POT-Creation-Date: 2015-01-24 19:09+0000\n"
 "PO-Revision-Date: 2013-12-10 16:05:10+0000\n"
 "Last-Translator: Jan Kupsa <jan.kupsa@gmail.com>\n"
 "Language-Team: \n"
@@ -196,7 +196,7 @@ msgstr "Kategorie události"
 
 #: classes/class-eo-widget-categories.php:28 event-organiser-manage.php:35
 #: includes/event-organiser-cpt.php:103
-#: includes/event-organiser-event-functions.php:1494
+#: includes/event-organiser-event-functions.php:1496
 #: templates/event-meta-event-single.php:69
 msgid "Categories"
 msgstr "Kategorie"
@@ -236,7 +236,7 @@ msgstr "Místa"
 msgid "Select Venue"
 msgstr "Vybrat místo"
 
-#: classes/class-eventorganiser-shortcodes.php:377
+#: classes/class-eventorganiser-shortcodes.php:376
 msgid "There is no excerpt because this is a protected post."
 msgstr "Není zde žádný výstřižek, jelikož se jedná o chráněný post."
 
@@ -269,17 +269,17 @@ msgid "today"
 msgstr "dnes"
 
 #: event-organiser-calendar.php:59 includes/event-organiser-register.php:59
-#: includes/event-organiser-register.php:249
+#: includes/event-organiser-register.php:248
 msgid "day"
 msgstr "den"
 
 #: event-organiser-calendar.php:60 includes/event-organiser-register.php:60
-#: includes/event-organiser-register.php:251
+#: includes/event-organiser-register.php:250
 msgid "week"
 msgstr "týden"
 
 #: event-organiser-calendar.php:61 includes/event-organiser-register.php:61
-#: includes/event-organiser-register.php:253
+#: includes/event-organiser-register.php:252
 msgid "month"
 msgstr "měsíc"
 
@@ -321,7 +321,7 @@ msgid "24 hour time"
 msgstr "24 hodinový čas"
 
 #: event-organiser-calendar.php:240
-#: includes/event-organiser-event-functions.php:1441
+#: includes/event-organiser-event-functions.php:1443
 msgid "Loading&#8230;"
 msgstr "Načítám..."
 
@@ -539,7 +539,7 @@ msgstr "den v týdnu"
 
 #: event-organiser-edit.php:185
 #: includes/event-organiser-event-functions.php:819
-#: includes/event-organiser-register.php:266
+#: includes/event-organiser-register.php:265
 msgid "until"
 msgstr "dokud"
 
@@ -547,7 +547,7 @@ msgstr "dokud"
 msgid "Include/Exclude occurrences"
 msgstr "Přidat/Ubrat opakování"
 
-#: event-organiser-edit.php:198 includes/event-organiser-register.php:243
+#: event-organiser-edit.php:198 includes/event-organiser-register.php:242
 msgid "Show dates"
 msgstr "Ukázat data"
 
@@ -1271,7 +1271,7 @@ msgid "Break this series"
 msgstr "Zrušit tuto serií"
 
 #: includes/event-organiser-ajax.php:672
-#: includes/event-organiser-event-functions.php:1399
+#: includes/event-organiser-event-functions.php:1401
 msgid "All Day"
 msgstr "Celodenní"
 
@@ -1410,7 +1410,7 @@ msgid "Choose from the most used tags"
 msgstr "Vyberte z nejpoužívanějších štítků"
 
 #: includes/event-organiser-cpt.php:157
-#: includes/event-organiser-event-functions.php:1501
+#: includes/event-organiser-event-functions.php:1503
 #: templates/event-meta-event-single.php:74
 msgid "Tags"
 msgstr "Štítky"
@@ -1712,27 +1712,27 @@ msgid "Assign the category a colour."
 msgstr "Přířadit barvu kategorii."
 
 #: includes/event-organiser-event-functions.php:740
-#: includes/event-organiser-register.php:267
+#: includes/event-organiser-register.php:266
 msgid "last"
 msgstr "poslední"
 
 #: includes/event-organiser-event-functions.php:740
-#: includes/event-organiser-register.php:267
+#: includes/event-organiser-register.php:266
 msgid "first"
 msgstr "první"
 
 #: includes/event-organiser-event-functions.php:740
-#: includes/event-organiser-register.php:267
+#: includes/event-organiser-register.php:266
 msgid "second"
 msgstr "druhý"
 
 #: includes/event-organiser-event-functions.php:740
-#: includes/event-organiser-register.php:267
+#: includes/event-organiser-register.php:266
 msgid "third"
 msgstr "třetí"
 
 #: includes/event-organiser-event-functions.php:740
-#: includes/event-organiser-register.php:267
+#: includes/event-organiser-register.php:266
 msgid "fourth"
 msgstr "čtvrtý"
 
@@ -1745,34 +1745,34 @@ msgid "custom reoccurrence"
 msgstr "ručně nastavené opakování"
 
 #: includes/event-organiser-event-functions.php:760
-#: includes/event-organiser-register.php:257
+#: includes/event-organiser-register.php:256
 msgid "every day"
 msgstr "každý den"
 
 #: includes/event-organiser-event-functions.php:762
-#: includes/event-organiser-register.php:258
+#: includes/event-organiser-register.php:257
 #, php-format
 msgid "every %d days"
 msgstr "každých %d dní"
 
 #: includes/event-organiser-event-functions.php:768
-#: includes/event-organiser-register.php:259
+#: includes/event-organiser-register.php:258
 msgid "every week on"
 msgstr "každý týden v"
 
 #: includes/event-organiser-event-functions.php:770
-#: includes/event-organiser-register.php:260
+#: includes/event-organiser-register.php:259
 #, php-format
 msgid "every %d weeks on"
 msgstr "každých %d týdnů v"
 
 #: includes/event-organiser-event-functions.php:781
-#: includes/event-organiser-register.php:261
+#: includes/event-organiser-register.php:260
 msgid "every month on the"
 msgstr "každý měsíc v"
 
 #: includes/event-organiser-event-functions.php:783
-#: includes/event-organiser-register.php:262
+#: includes/event-organiser-register.php:261
 #, php-format
 msgid "every %d months on the"
 msgstr "každých %d měsíců v"
@@ -1794,56 +1794,56 @@ msgstr "Ukázat více"
 msgid "Show Less"
 msgstr "Ukázat méně"
 
-#: includes/event-organiser-register.php:244
+#: includes/event-organiser-register.php:243
 msgid "Hide dates"
 msgstr "Skrýt data"
 
-#: includes/event-organiser-register.php:247
+#: includes/event-organiser-register.php:246
 msgid "Hour"
 msgstr "Hodina"
 
-#: includes/event-organiser-register.php:248
+#: includes/event-organiser-register.php:247
 msgid "Minute"
 msgstr "Minuta"
 
-#: includes/event-organiser-register.php:250
+#: includes/event-organiser-register.php:249
 msgid "days"
 msgstr "dny"
 
-#: includes/event-organiser-register.php:252
+#: includes/event-organiser-register.php:251
 msgid "weeks"
 msgstr "týdny"
 
-#: includes/event-organiser-register.php:254
+#: includes/event-organiser-register.php:253
 msgid "months"
 msgstr "měsíce"
 
-#: includes/event-organiser-register.php:255
+#: includes/event-organiser-register.php:254
 msgid "year"
 msgstr "rok"
 
-#: includes/event-organiser-register.php:256
+#: includes/event-organiser-register.php:255
 msgid "years"
 msgstr "roky"
 
-#: includes/event-organiser-register.php:263
+#: includes/event-organiser-register.php:262
 msgid "every year on the"
 msgstr "každý rok v"
 
-#: includes/event-organiser-register.php:264
+#: includes/event-organiser-register.php:263
 #, php-format
 msgid "every %d years on the"
 msgstr "každých %d let v"
 
-#: includes/event-organiser-register.php:265
+#: includes/event-organiser-register.php:264
 msgid "This event will repeat"
 msgstr "Tato událost se bude opakovat"
 
-#: includes/event-organiser-register.php:366
+#: includes/event-organiser-register.php:365
 msgid "Settings"
 msgstr "Nastavení"
 
-#: includes/event-organiser-register.php:669
+#: includes/event-organiser-register.php:668
 #, php-format
 msgid ""
 "<h4>City & State Fields Added</h4>City and state / province fields for "
@@ -1856,7 +1856,7 @@ msgstr ""
 "pokusit je automaticky doplnit</a>. Detaily můžete vždy následně manuálně "
 "změnit."
 
-#: includes/event-organiser-register.php:676
+#: includes/event-organiser-register.php:675
 msgid ""
 "<h4>The Default Templates Have Changed</h4>Don't panic! If you've set up "
 "your own templates in your theme you won't notice any change. </br> If you "
@@ -1869,11 +1869,11 @@ msgstr ""
 "event-organiser.com/blog/new-default-templates-in-1-7'>navštivte tuto "
 "stránku<a/>."
 
-#: includes/event-organiser-register.php:712
+#: includes/event-organiser-register.php:711
 msgid "Dismiss this notice"
 msgstr "Zrušit toto oznámení."
 
-#: includes/event-organiser-register.php:713
+#: includes/event-organiser-register.php:712
 msgid "Dismiss"
 msgstr "Zrušit"
 
@@ -1897,31 +1897,31 @@ msgstr "PSČ"
 msgid "Country"
 msgstr "Země"
 
-#: includes/event.php:573
+#: includes/event.php:575
 msgid "Schedule not recognised."
 msgstr "Naplánování nerozpoznáno."
 
-#: includes/event.php:582
+#: includes/event.php:584
 msgid "Start date not provided."
 msgstr "Počáteční datum nestanoveno"
 
-#: includes/event.php:600
+#: includes/event.php:602
 msgid "Start date occurs after end date."
 msgstr "Počáteční datum je po datu konce."
 
-#: includes/event.php:603
+#: includes/event.php:605
 msgid "Schedule end date is before is before the start date."
 msgstr "Naplánované datum konce události je před jeho počátečním datem."
 
-#: includes/event.php:686
+#: includes/event.php:688
 msgid "Invalid monthly schedule (invalid ordinal)"
 msgstr "Neplatný měsíční rozvrh (neplatná pořadová číslovka)"
 
-#: includes/event.php:806
+#: includes/event.php:808
 msgid "Event does not contain any dates."
 msgstr "Událost neobsahuje žádná data"
 
-#: includes/event.php:947
+#: includes/event.php:949
 msgid "Occurrence not deleted. Occurrence not found."
 msgstr "Výskyt nesmazán. Výskyt nenalezen."
 
