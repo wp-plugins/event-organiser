@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-02 21:46+0000\n"
+"POT-Creation-Date: 2015-03-10 11:13+0000\n"
 "PO-Revision-Date: 2014-03-08 12:06:57+0000\n"
 "Last-Translator: Parvan Voynov <ppvoynov@gmail.com>\n"
 "Language-Team: \n"
@@ -31,15 +31,15 @@ msgstr ""
 msgid "Group by"
 msgstr ""
 
-#: classes/class-eo-agenda-widget.php:41 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:41 event-organiser-calendar.php:246
 msgid "Day"
 msgstr ""
 
-#: classes/class-eo-agenda-widget.php:42 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:42 event-organiser-calendar.php:246
 msgid "Week"
 msgstr ""
 
-#: classes/class-eo-agenda-widget.php:43 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:43 event-organiser-calendar.php:246
 msgid "Month"
 msgstr ""
 
@@ -59,7 +59,7 @@ msgstr ""
 msgid "Displays a calendar of your events"
 msgstr ""
 
-#: classes/class-eo-calendar-widget.php:24 event-organiser-calendar.php:231
+#: classes/class-eo-calendar-widget.php:24 event-organiser-calendar.php:242
 msgid "Events Calendar"
 msgstr ""
 
@@ -259,110 +259,101 @@ msgstr ""
 msgid "Calendar View"
 msgstr "Изглед календар"
 
-#: event-organiser-calendar.php:56 includes/event-organiser-register.php:58
+#: event-organiser-calendar.php:67 includes/event-organiser-register.php:58
 msgid "today"
 msgstr "днес"
 
-#: event-organiser-calendar.php:57 includes/event-organiser-register.php:59
+#: event-organiser-calendar.php:68 includes/event-organiser-register.php:59
 #: includes/event-organiser-register.php:248
 msgid "day"
 msgstr "ден"
 
-#: event-organiser-calendar.php:58 includes/event-organiser-register.php:60
+#: event-organiser-calendar.php:69 includes/event-organiser-register.php:60
 #: includes/event-organiser-register.php:250
 msgid "week"
 msgstr "седмица"
 
-#: event-organiser-calendar.php:59 includes/event-organiser-register.php:61
+#: event-organiser-calendar.php:70 includes/event-organiser-register.php:61
 #: includes/event-organiser-register.php:252
 msgid "month"
 msgstr "месец"
 
-#: event-organiser-calendar.php:60 includes/event-organiser-register.php:62
+#: event-organiser-calendar.php:71 includes/event-organiser-register.php:62
 msgid "go to date"
 msgstr "Отиди на дата"
 
-#: event-organiser-calendar.php:61 event-organiser-manage.php:122
-#: includes/event-organiser-cpt.php:105
-msgid "View all categories"
-msgstr "Виж всички категории"
-
-#: event-organiser-calendar.php:62 includes/event-organiser-cpt.php:45
-msgid "View all venues"
-msgstr "Виж всички места на събития"
-
-#: event-organiser-calendar.php:109
+#: event-organiser-calendar.php:120
 msgid "You do not have sufficient permissions to create events. "
 msgstr "Вие нямате достатъчно права, за да създавате събития."
 
-#: event-organiser-calendar.php:165
+#: event-organiser-calendar.php:176
 msgid "You do not have sufficient permissions to edit this event. "
 msgstr "Вие нямате достатъчно права, за да редактирате това събитие."
 
-#: event-organiser-calendar.php:183
+#: event-organiser-calendar.php:194
 msgid "You do not have sufficient permissions to delete this event. "
 msgstr "Вие нямате достатъчно права, за да изтриете това събитие."
 
-#: event-organiser-calendar.php:193
+#: event-organiser-calendar.php:204
 msgid "Occurrence deleted."
 msgstr ""
 
-#: event-organiser-calendar.php:209
+#: event-organiser-calendar.php:220
 msgid "Calendar options"
 msgstr "Опции на календара"
 
-#: event-organiser-calendar.php:216
+#: event-organiser-calendar.php:227
 msgid "24 hour time"
 msgstr "24 часово време"
 
-#: event-organiser-calendar.php:238
+#: event-organiser-calendar.php:249
 #: includes/event-organiser-event-functions.php:1457
 msgid "Loading&#8230;"
 msgstr "Зареждане..."
 
-#: event-organiser-calendar.php:245
+#: event-organiser-calendar.php:256
 msgid "Current date/time"
 msgstr "Настояща Дата/Час"
 
-#: event-organiser-calendar.php:250
+#: event-organiser-calendar.php:261
 msgid "Create an event"
 msgstr "Създаване на събитие"
 
-#: event-organiser-calendar.php:255
+#: event-organiser-calendar.php:266
 msgid "When"
 msgstr "Кога"
 
-#: event-organiser-calendar.php:259
+#: event-organiser-calendar.php:270
 msgid "Event Title"
 msgstr "Заглавие на събитието"
 
-#: event-organiser-calendar.php:266 includes/event-organiser-ajax.php:397
+#: event-organiser-calendar.php:277 includes/event-organiser-ajax.php:397
 msgid "Where"
 msgstr "Къде"
 
-#: event-organiser-calendar.php:291
+#: event-organiser-calendar.php:302
 msgid "Save Draft"
 msgstr ""
 
-#: event-organiser-calendar.php:292 event-organiser-calendar.php:299
+#: event-organiser-calendar.php:303 event-organiser-calendar.php:310
 #: event-organiser-edit.php:258
 msgid "Cancel"
 msgstr ""
 
-#: event-organiser-calendar.php:295
+#: event-organiser-calendar.php:306
 msgid "Publish Event"
 msgstr ""
 
-#: event-organiser-calendar.php:301
+#: event-organiser-calendar.php:312
 msgid "Submit for Review"
 msgstr ""
 
-#: event-organiser-calendar.php:322 event-organiser-edit.php:14
+#: event-organiser-calendar.php:333 event-organiser-edit.php:14
 #: templates/event-meta-event-single.php:37
 msgid "Event Details"
 msgstr ""
 
-#: event-organiser-calendar.php:324
+#: event-organiser-calendar.php:335
 msgid "Event Detail"
 msgstr ""
 
@@ -613,45 +604,45 @@ msgstr "Събитие"
 msgid "Reoccurrence"
 msgstr "Повторение"
 
-#: event-organiser-manage.php:153
+#: event-organiser-manage.php:152
 msgid "View all events"
 msgstr "Виж всички събития"
 
-#: event-organiser-manage.php:154
+#: event-organiser-manage.php:153
 msgid "Future events"
 msgstr "Бъдещи събития"
 
-#: event-organiser-manage.php:155
+#: event-organiser-manage.php:154
 msgid "Expired events"
 msgstr "Изминали събития"
 
-#: event-organiser-manage.php:156
+#: event-organiser-manage.php:155
 msgid "Events within 24 hours"
 msgstr "Събития в рамките на 24 часа"
 
-#: event-organiser-manage.php:157
+#: event-organiser-manage.php:156
 msgid "Events within 1 week"
 msgstr "Събития в рамките на 1 седмица"
 
-#: event-organiser-manage.php:158
+#: event-organiser-manage.php:157
 #, php-format
 msgid "Events within %d weeks"
 msgstr "Събития в рамките на %d седмици"
 
-#: event-organiser-manage.php:159
+#: event-organiser-manage.php:158
 msgid "Events within 1 month"
 msgstr "Събития в рамките на 1 месец"
 
-#: event-organiser-manage.php:160
+#: event-organiser-manage.php:159
 #, php-format
 msgid "Events within %d months"
 msgstr "Събития в рамките на %d месеца"
 
-#: event-organiser-manage.php:161
+#: event-organiser-manage.php:160
 msgid "Events within 1 year"
 msgstr "Събития в рамките на 1 година"
 
-#: event-organiser-manage.php:212
+#: event-organiser-manage.php:211
 msgid "&mdash; No Change &mdash;"
 msgstr "— Без промяна —"
 
@@ -1283,6 +1274,10 @@ msgstr "Мероприятията трябва да са разделени с�
 msgid "Venue Location"
 msgstr "Локализация на мястото на провеждане"
 
+#: includes/event-organiser-cpt.php:45
+msgid "View all venues"
+msgstr "Виж всички места на събития"
+
 #: includes/event-organiser-cpt.php:46
 msgid "Venue:"
 msgstr ""
@@ -1331,6 +1326,10 @@ msgstr "Нова категория"
 #: includes/event-organiser-cpt.php:102
 msgid "No categories found"
 msgstr "Няма намерени категории"
+
+#: includes/event-organiser-cpt.php:105
+msgid "View all categories"
+msgstr "Виж всички категории"
 
 #: includes/event-organiser-cpt.php:147
 msgctxt "taxonomy singular name"

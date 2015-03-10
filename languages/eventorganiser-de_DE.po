@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-02 21:46+0000\n"
+"POT-Creation-Date: 2015-03-10 11:13+0000\n"
 "PO-Revision-Date: 2014-11-19 10:28:59+0000\n"
 "Last-Translator: Maidstein <mn@maidstein.de>\n"
 "Language-Team: \n"
@@ -31,15 +31,15 @@ msgstr "Titel"
 msgid "Group by"
 msgstr "Gruppiere nach"
 
-#: classes/class-eo-agenda-widget.php:41 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:41 event-organiser-calendar.php:246
 msgid "Day"
 msgstr "Tag"
 
-#: classes/class-eo-agenda-widget.php:42 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:42 event-organiser-calendar.php:246
 msgid "Week"
 msgstr "Woche"
 
-#: classes/class-eo-agenda-widget.php:43 event-organiser-calendar.php:235
+#: classes/class-eo-agenda-widget.php:43 event-organiser-calendar.php:246
 msgid "Month"
 msgstr "Monat"
 
@@ -59,7 +59,7 @@ msgstr "'Add To Google'-Link anzeigen"
 msgid "Displays a calendar of your events"
 msgstr "Zeigt einen Kalender mit Deinen Terminen"
 
-#: classes/class-eo-calendar-widget.php:24 event-organiser-calendar.php:231
+#: classes/class-eo-calendar-widget.php:24 event-organiser-calendar.php:242
 msgid "Events Calendar"
 msgstr "Terminkalender"
 
@@ -266,115 +266,106 @@ msgstr "Erfahre mehr darüber ..."
 msgid "Calendar View"
 msgstr "Kalenderansicht"
 
-#: event-organiser-calendar.php:56 includes/event-organiser-register.php:58
+#: event-organiser-calendar.php:67 includes/event-organiser-register.php:58
 msgid "today"
 msgstr "heute"
 
-#: event-organiser-calendar.php:57 includes/event-organiser-register.php:59
+#: event-organiser-calendar.php:68 includes/event-organiser-register.php:59
 #: includes/event-organiser-register.php:248
 msgid "day"
 msgstr "Tag"
 
-#: event-organiser-calendar.php:58 includes/event-organiser-register.php:60
+#: event-organiser-calendar.php:69 includes/event-organiser-register.php:60
 #: includes/event-organiser-register.php:250
 msgid "week"
 msgstr "Woche"
 
-#: event-organiser-calendar.php:59 includes/event-organiser-register.php:61
+#: event-organiser-calendar.php:70 includes/event-organiser-register.php:61
 #: includes/event-organiser-register.php:252
 msgid "month"
 msgstr "Monat"
 
-#: event-organiser-calendar.php:60 includes/event-organiser-register.php:62
+#: event-organiser-calendar.php:71 includes/event-organiser-register.php:62
 msgid "go to date"
 msgstr "Gehe zu Datum"
 
-#: event-organiser-calendar.php:61 event-organiser-manage.php:122
-#: includes/event-organiser-cpt.php:105
-msgid "View all categories"
-msgstr "Alle Terminkategorien"
-
-#: event-organiser-calendar.php:62 includes/event-organiser-cpt.php:45
-msgid "View all venues"
-msgstr "Alle Veranstaltungsorte"
-
-#: event-organiser-calendar.php:109
+#: event-organiser-calendar.php:120
 msgid "You do not have sufficient permissions to create events. "
 msgstr ""
 "Sie verfügen nicht über ausreichende Berechtigungen, um Termine anzulegen."
 
-#: event-organiser-calendar.php:165
+#: event-organiser-calendar.php:176
 msgid "You do not have sufficient permissions to edit this event. "
 msgstr ""
 "Sie verfügen nicht über ausreichende Berechtigungen, um diesen Termin zu "
 "bearbeiten."
 
-#: event-organiser-calendar.php:183
+#: event-organiser-calendar.php:194
 msgid "You do not have sufficient permissions to delete this event. "
 msgstr ""
 "Sie verfügen nicht über ausreichende Berechtigungen, um diesen Termin zu "
 "löschen."
 
-#: event-organiser-calendar.php:193
+#: event-organiser-calendar.php:204
 msgid "Occurrence deleted."
 msgstr "Ereignis gelöscht"
 
-#: event-organiser-calendar.php:209
+#: event-organiser-calendar.php:220
 msgid "Calendar options"
 msgstr "Kalenderoptionen"
 
-#: event-organiser-calendar.php:216
+#: event-organiser-calendar.php:227
 msgid "24 hour time"
 msgstr "24-Stunden-Zeit"
 
-#: event-organiser-calendar.php:238
+#: event-organiser-calendar.php:249
 #: includes/event-organiser-event-functions.php:1457
 msgid "Loading&#8230;"
 msgstr "Laden&#8230;"
 
-#: event-organiser-calendar.php:245
+#: event-organiser-calendar.php:256
 msgid "Current date/time"
 msgstr "Aktuelle/s Datum / Zeit"
 
-#: event-organiser-calendar.php:250
+#: event-organiser-calendar.php:261
 msgid "Create an event"
 msgstr "Termin erstellen"
 
-#: event-organiser-calendar.php:255
+#: event-organiser-calendar.php:266
 msgid "When"
 msgstr "Wann"
 
-#: event-organiser-calendar.php:259
+#: event-organiser-calendar.php:270
 msgid "Event Title"
 msgstr "Termintitel"
 
-#: event-organiser-calendar.php:266 includes/event-organiser-ajax.php:397
+#: event-organiser-calendar.php:277 includes/event-organiser-ajax.php:397
 msgid "Where"
 msgstr "Wo"
 
-#: event-organiser-calendar.php:291
+#: event-organiser-calendar.php:302
 msgid "Save Draft"
 msgstr "Entwurf speichern"
 
-#: event-organiser-calendar.php:292 event-organiser-calendar.php:299
+#: event-organiser-calendar.php:303 event-organiser-calendar.php:310
 #: event-organiser-edit.php:258
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: event-organiser-calendar.php:295
+#: event-organiser-calendar.php:306
 msgid "Publish Event"
 msgstr "Termin veröffentlichen"
 
-#: event-organiser-calendar.php:301
+#: event-organiser-calendar.php:312
 msgid "Submit for Review"
 msgstr "Zur Prüfung einreichen"
 
-#: event-organiser-calendar.php:322 event-organiser-edit.php:14
+#: event-organiser-calendar.php:333 event-organiser-edit.php:14
 #: templates/event-meta-event-single.php:37
 msgid "Event Details"
 msgstr "Termin Details"
 
-#: event-organiser-calendar.php:324
+#: event-organiser-calendar.php:335
 msgid "Event Detail"
 msgstr "Termin Detail"
 
@@ -659,45 +650,45 @@ msgstr "Termin"
 msgid "Reoccurrence"
 msgstr "Wiederholung"
 
-#: event-organiser-manage.php:153
+#: event-organiser-manage.php:152
 msgid "View all events"
 msgstr "Alle Termine anzeigen"
 
-#: event-organiser-manage.php:154
+#: event-organiser-manage.php:153
 msgid "Future events"
 msgstr "Zukünftige Termine"
 
-#: event-organiser-manage.php:155
+#: event-organiser-manage.php:154
 msgid "Expired events"
 msgstr "Abgelaufene Termine"
 
-#: event-organiser-manage.php:156
+#: event-organiser-manage.php:155
 msgid "Events within 24 hours"
 msgstr "Termine innerhalb von 24 Stunden"
 
-#: event-organiser-manage.php:157
+#: event-organiser-manage.php:156
 msgid "Events within 1 week"
 msgstr "Termine innerhalb einer Woche"
 
-#: event-organiser-manage.php:158
+#: event-organiser-manage.php:157
 #, php-format
 msgid "Events within %d weeks"
 msgstr "Termine innerhalb %d Wochen"
 
-#: event-organiser-manage.php:159
+#: event-organiser-manage.php:158
 msgid "Events within 1 month"
 msgstr "Termine innerhalb eines Monats"
 
-#: event-organiser-manage.php:160
+#: event-organiser-manage.php:159
 #, php-format
 msgid "Events within %d months"
 msgstr "Termine innerhalb %d Monate"
 
-#: event-organiser-manage.php:161
+#: event-organiser-manage.php:160
 msgid "Events within 1 year"
 msgstr "Termine innerhalb eines Jahres"
 
-#: event-organiser-manage.php:212
+#: event-organiser-manage.php:211
 msgid "&mdash; No Change &mdash;"
 msgstr "— Keine Änderung —"
 
@@ -1352,6 +1343,10 @@ msgstr "Separate Veranstaltungsort mit Komma"
 msgid "Venue Location"
 msgstr "Veranstaltungsort-Location"
 
+#: includes/event-organiser-cpt.php:45
+msgid "View all venues"
+msgstr "Alle Veranstaltungsorte"
+
 #: includes/event-organiser-cpt.php:46
 msgid "Venue:"
 msgstr ""
@@ -1400,6 +1395,10 @@ msgstr "Neuer Terminkategorienname"
 #: includes/event-organiser-cpt.php:102
 msgid "No categories found"
 msgstr "Keine Terminkategorien gefunden"
+
+#: includes/event-organiser-cpt.php:105
+msgid "View all categories"
+msgstr "Alle Terminkategorien"
 
 #: includes/event-organiser-cpt.php:147
 msgctxt "taxonomy singular name"
