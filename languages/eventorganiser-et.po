@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-10 11:13+0000\n"
+"POT-Creation-Date: 2015-03-13 15:57+0000\n"
 "PO-Revision-Date: 2014-01-30 03:47:37+0000\n"
 "Last-Translator: Henri Jeret <henri.jeret@gmail.com>\n"
 "Language-Team: \n"
@@ -1067,13 +1067,13 @@ msgstr "[Read %1$d-%2$d]"
 msgid "[Line %1$d]"
 msgstr "[Rida %1$d]"
 
-#: includes/class-eo-ical-parser.php:943
+#: includes/class-eo-ical-parser.php:948
 #, php-format
 msgid "Invalid date \"%s\". Date expected in YYYYMMDD format."
 msgstr ""
 "Vale kuupäeva formaat \"%s\". Oodatud kuupäeva formaat: YYYYMMDD format."
 
-#: includes/class-eo-ical-parser.php:981
+#: includes/class-eo-ical-parser.php:986
 #, php-format
 msgid ""
 "Invalid datetime \"%s\". Date expected in YYYYMMDDTHHiissZ or "
