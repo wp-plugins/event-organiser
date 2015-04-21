@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-03-19 12:56+0000\n"
+"POT-Creation-Date: 2015-04-21 01:17+0100\n"
 "PO-Revision-Date: 2014-01-30 03:47:37+0000\n"
 "Last-Translator: Henri Jeret <henri.jeret@gmail.com>\n"
 "Language-Team: \n"
@@ -169,17 +169,17 @@ msgstr ""
 msgid "'No events' message"
 msgstr "'Sündmused puuduvad' teade"
 
-#: classes/class-eo-venue-list-table.php:72 templates/single-event.php:71
+#: classes/class-eo-venue-list-table.php:75 templates/single-event.php:71
 msgid "Edit"
 msgstr "Muuda"
 
-#: classes/class-eo-venue-list-table.php:73
-#: classes/class-eo-venue-list-table.php:128
+#: classes/class-eo-venue-list-table.php:80
+#: classes/class-eo-venue-list-table.php:142
 msgid "Delete"
 msgstr "Kustuta"
 
-#: classes/class-eo-venue-list-table.php:74
-#: includes/event-organiser-ajax.php:674
+#: classes/class-eo-venue-list-table.php:85
+#: includes/event-organiser-ajax.php:678
 msgid "View"
 msgstr "Vaata"
 
@@ -533,7 +533,7 @@ msgstr "Vali toimumispaik"
 msgid "Venue Name"
 msgstr "Toimumispaiga nimi"
 
-#: event-organiser-edit.php:415
+#: event-organiser-edit.php:416
 msgid "Event dates were not saved."
 msgstr "Sündmuse kuupäevi ei salvestatud."
 
@@ -1212,40 +1212,40 @@ msgstr "See sündmus kordub"
 msgid "Edit Event"
 msgstr "Muuda sündmust"
 
-#: includes/event-organiser-ajax.php:448
+#: includes/event-organiser-ajax.php:449
 msgid "Delete this occurrence"
 msgstr "Kustuta toimumine"
 
-#: includes/event-organiser-ajax.php:462
+#: includes/event-organiser-ajax.php:466
 msgid "Break this series"
 msgstr "Katkesta seeria"
 
-#: includes/event-organiser-ajax.php:670
+#: includes/event-organiser-ajax.php:674
 #: includes/event-organiser-event-functions.php:1409
 msgid "All Day"
 msgstr "Terve päev"
 
-#: includes/event-organiser-ajax.php:675
+#: includes/event-organiser-ajax.php:679
 msgid "Add To Google Calendar"
 msgstr "Lisa Google Kalendrisse"
 
-#: includes/event-organiser-ajax.php:786
+#: includes/event-organiser-ajax.php:790
 msgid "Event not found"
 msgstr ""
 
-#: includes/event-organiser-ajax.php:798
+#: includes/event-organiser-ajax.php:802
 msgid "Events are not editable via the admin calendar"
 msgstr ""
 
-#: includes/event-organiser-ajax.php:808
+#: includes/event-organiser-ajax.php:812
 msgid "Are you sure you want to do this?"
 msgstr ""
 
-#: includes/event-organiser-ajax.php:818
+#: includes/event-organiser-ajax.php:822
 msgid "You do not have permission to edit this event"
 msgstr ""
 
-#: includes/event-organiser-ajax.php:840
+#: includes/event-organiser-ajax.php:844
 #, php-format
 msgid "Event not created: %s"
 msgstr ""
