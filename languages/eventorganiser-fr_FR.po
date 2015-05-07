@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Event Organiser\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-30 23:55+0100\n"
+"POT-Creation-Date: 2015-05-07 23:07+0100\n"
 "PO-Revision-Date: 2015-04-06 19:10:22+0000\n"
 "Last-Translator: Etienne <etienne.bourrez@free.fr>\n"
 "Language-Team: \n"
@@ -239,7 +239,7 @@ msgstr "Lieux"
 msgid "Select Venue"
 msgstr "Choisir le lieu"
 
-#: classes/class-eventorganiser-shortcodes.php:391
+#: classes/class-eventorganiser-shortcodes.php:393
 msgid "There is no excerpt because this is a protected post."
 msgstr "Il n'y a aucun extrait parce qu'il s'agit d'un post protégé."
 

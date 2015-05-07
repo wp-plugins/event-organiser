@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: event-organiser 2.13.0\n"
+"Project-Id-Version: event-organiser 2.13.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-01 19:47+0100\n"
+"POT-Creation-Date: 2015-05-07 23:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -238,7 +238,7 @@ msgstr ""
 msgid "Select Venue"
 msgstr ""
 
-#: classes/class-eventorganiser-shortcodes.php:391
+#: classes/class-eventorganiser-shortcodes.php:393
 msgid "There is no excerpt because this is a protected post."
 msgstr ""
 
